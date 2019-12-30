@@ -1,0 +1,76 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: root template for codepipeline poc
+Parameters:
+  DockerPassword:
+    Default: /codebuild/docker/password
+    Description: password for hub.docker
+    Type: String
+  DockerUsername:
+    Default: seanturner026
+    Description: username for hub.docker
+    Type: String
+  Environment:
+    AllowedValues:
+    - dev
+    - prod
+    Default: dev
+    Description: environment
+    Type: String
+  GithubBranch:
+    Default: master
+    Description: github branch
+    Type: String
+  GithubOwner:
+    Default: SeanTurner026
+    Description: github owner
+    Type: String
+  GithubRepository:
+    Default: aws-codepipeline-poc
+    Description: github repository
+    Type: String
+  GithubToken:
+    Description: github token for codepipeline
+    NoEcho: true
+    Type: String
+  VpcName:
+    Default: sandbox
+    Description: name of the vpc
+    Type: String
+Resources:
+  CodeBuildStack:
+    Properties:
+      Parameters:
+        DockerPassword:
+          Ref: DockerPassword
+        DockerUsername:
+          Ref: DockerUsername
+        Environment:
+          Ref: Environment
+      TemplateURL: https://s3.amazonaws.com/sean-cfn-templates/afe67d94042296dc4db85437100b14c0.template
+    Type: AWS::CloudFormation::Stack
+  CodePipelineStack:
+    Properties:
+      Parameters:
+        Environment:
+          Ref: Environment
+        GithubBranch:
+          Ref: GithubBranch
+        GithubOwner:
+          Ref: GithubOwner
+        GithubRepository:
+          Ref: GithubRepository
+        GithubToken:
+          Ref: GithubToken
+      TemplateURL: https://s3.amazonaws.com/sean-cfn-templates/9bb38bd9e221daad6612aa5741937c18.template
+    Type: AWS::CloudFormation::Stack
+  S3Stack:
+    Properties:
+      TemplateURL: https://s3.amazonaws.com/sean-cfn-templates/63052f2802e8bbcffb81b735c8675d67.template
+    Type: AWS::CloudFormation::Stack
+  VpcStack:
+    Properties:
+      Parameters:
+        VpcName:
+          Ref: VpcName
+      TemplateURL: https://s3.amazonaws.com/sean-cfn-templates/2a233b1d80206d299dc5925b78896900.template
+    Type: AWS::CloudFormation::Stack
