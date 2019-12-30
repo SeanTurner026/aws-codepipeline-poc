@@ -1,0 +1,14 @@
+AWSTemplateFormatVersion: 2010-09-09
+
+Description: s3 bucket for aws codepipeline poc
+
+Resources:
+  S3:
+    Type: "AWS::S3::Bucket"
+    Properties:
+      BucketName: "aws-sean-consegna-codepipeline-poc"
+
+Outputs:
+  Name:
+    Description: S3 bucket name
+    Value: !Ref S3

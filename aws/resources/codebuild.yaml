@@ -1,0 +1,158 @@
+AWSTemplateFormatVersion: 2010-09-09
+
+Description: codebuild project for aws codepipeline poc
+
+Parameters:
+  DockerUsername:
+    Type: String
+    Description: username for hub.docker
+    Default: seanturner026
+
+  DockerPassword:
+    Type: String
+    Description: password for hub.docker
+    Default: /codebuild/docker/username
+
+  Environment:
+    Type: String
+    Description: environment
+    AllowedValues:
+      - dev
+      - prod
+    Default: dev
+
+  Vpc:
+    Type: AWS::EC2::VPC::Id
+
+  PrivateSubnet1:
+    Type: AWS::EC2::Subnet::Id
+
+  PrivateSubnet2:
+    Type: AWS::EC2::Subnet::Id
+
+  PrivateSubnet3:
+    Type: AWS::EC2::Subnet::Id
+
+Resources:
+  CodeBuildRole:
+    Type: "AWS::IAM::Role"
+    Properties:
+      RoleName: !Join:
+        - ""
+        - - !Ref AWS::StackName
+          - "-code-build-role-"
+          - !Ref Environment
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          Effect: "Allow"
+          Principal:
+            Service: "codebuild.amazonaws.com"
+          Action: "sts:AssumeRole"
+
+  CodeBuildPolicy:
+    Type: "AWS::IAM::Policy"
+    Properties:
+      PolicyName: !Join:
+        - ""
+        - - !Ref AWS::StackName
+          - "-code-build-policy-"
+          - !Ref Environment
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          Effect: Allow
+          Action:
+            - logs:CreateLogGroup
+            - logs:CreateLogStream
+            - logs:PutLogEvents
+            - logs:DescribeLogGroups
+            - logs:FilterLogEvents
+            - logs:DescribeLogStreams
+            - logs:DeleteLogGroup
+            - s3:putObject
+            - s3:getObject
+            - codebuild:*
+            - cloudformation:List*
+            - cloudformation:Get*
+            - cloudformation:PreviewStackUpdate
+            - cloudformation:ValidateTemplate
+            - cloudformation:CreateStack
+            - cloudformation:CreateUploadBucket
+            - cloudformation:DeleteStack
+            - cloudformation:Describe*
+            - cloudformation:UpdateStack
+            - lambda:Get*
+            - lambda:List*
+            - lambda:CreateFunction
+            - lambda:AddPermission
+            - lambda:CreateAlias
+            - lambda:DeleteFunction
+            - lambda:InvokeFunction
+            - lambda:PublishVersion
+            - lambda:RemovePermission
+            - lambda:Update*
+            - apigateway:GET
+            - apigateway:POST
+            - apigateway:PUT
+            - apigateway:DELETE
+            - s3:CreateBucket
+            - s3:DeleteBucket
+            - s3:ListBucket
+            - s3:ListBucketVersions
+            - s3:PutObject
+            - s3:GetObject
+            - s3:DeleteObject
+            - iam:PassRole
+            - kinesis:*
+            - iam:GetRole
+            - iam:CreateRole
+            - iam:PutRolePolicy
+            - iam:DeleteRolePolicy
+            - iam:DeleteRole
+            - cloudwatch:GetMetricStatistics
+            - events:Put*
+            - events:Remove*
+            - events:Delete*
+            - dynamodb:*
+          Resource: "*"
+      Roles:
+        - !Ref CodeBuildRole
+
+  BuildPushJob:
+    Type: "AWS::CodeBuild::Project"
+    Properties:
+      Name: build-push-job
+      Description: build and push docker containers to hub.docker
+      ServiceRole: !Ref CodeBuildRole
+      VpcConfig:
+        Subnets:
+          - !Ref PrivateSubnet1
+          - !Ref PrivateSubnet2
+          - !Ref PrivateSubnet3
+        VpcId: !Ref Vpc
+      TimeoutInMinutes: 5
+      Source:
+        Type: CODEPIPELINE
+        BuildSpec: !Sub |
+          version: 0.2
+          phases:
+            build:
+              commands:
+                - bash ../scripts/build-push.sh
+      Environment:
+        Type: "LINUX_CONTAINER"
+        ComputeType: BUILD_GENERAL1_SMALL
+        EnvironmentVariables:
+          - Name: ENVIRONMENT
+            Type: PLAINTEXT
+            Value: !Ref Environment
+          - Name: DOCKER_USERNAME
+            Type: PLAINTEXT
+            Value: !Ref DockerUsername
+          - Name: DOCKER_PASSWORD
+            Type: PARAMETER_STORE
+            Value: !Ref DockerPassword
+        Image: aws/codebuild/python:3.7
+      Artifacts:
+        Type: CODEPIPELINE

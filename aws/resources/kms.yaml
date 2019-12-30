@@ -1,0 +1,28 @@
+AWSTemplateFormatVersion: 2010-09-09
+
+Description: kms key for aws account
+
+Resources:
+  Kms:
+    Type: AWS::KMS::Key
+    Properties:
+      Description: kms key for aws account
+      Enabled: true
+      EnableKeyRotation: false
+      KeyPolicy:
+        - Sid: "Allow administration of the key"
+          Effect: Allow
+          Principal:
+            AWS: !Sub "arn:aws:iam::${AWS::AccountId}:root"
+          Action:
+            - "kms:*"
+          Resource: "*"
+        - Sid: "Allow use of the key by IAM user sean-turner"
+          Effect: "Allow"
+          Principal:
+            AWS: !Sub "arn:aws:iam::${AWS::AccountId}:sean-turner"
+          Action:
+            - "kms:*"
+          Resource: "*"
+      KeyUsage: ENCRYPT_DECRYPT
+      PendingWindowInDays: 7
