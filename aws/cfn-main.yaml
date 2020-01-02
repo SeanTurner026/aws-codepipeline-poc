@@ -3,6 +3,10 @@ AWSTemplateFormatVersion: 2010-09-09
 Description: root template for codepipeline poc
 
 Parameters:
+
+  BucketName:
+    Type: String
+
   VpcName:
     Description: name of the vpc
     Type: String
@@ -25,6 +29,18 @@ Parameters:
       - dev
       - prod
     Default: dev
+
+  Vpc:
+    Type: AWS::EC2::VPC::Id
+
+  PrivateSubnet1:
+    Type: AWS::EC2::Subnet::Id
+
+  PrivateSubnet2:
+    Type: AWS::EC2::Subnet::Id
+
+  PrivateSubnet3:
+    Type: AWS::EC2::Subnet::Id
 
   GithubRepository:
     Type: String
@@ -66,6 +82,10 @@ Resources:
         Environment: !Ref Environment
         DockerUsername: !Ref DockerUsername
         DockerPassword: !Ref DockerPassword
+        Vpc: !GetAtt VpcStack.Outputs.VpcId
+        PrivateSubnet1: !GetAtt VpcStack.Outputs.PrivateSubnetId1
+        PrivateSubnet2: !GetAtt VpcStack.Outputs.PrivateSubnetId2
+        PrivateSubnet3: !GetAtt VpcStack.Outputs.PrivateSubnetId3
       TemplateURL: resources/codebuild.yaml
 
   CodePipelineStack:
@@ -77,4 +97,5 @@ Resources:
         GithubBranch: !Ref GithubBranch
         GithubOwner: !Ref GithubOwner
         GithubToken: !Ref GithubToken
+        S3: !GetAtt S3Stack.Outputs.BucketName
       TemplateURL: resources/codepipeline.yaml

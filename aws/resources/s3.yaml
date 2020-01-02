@@ -9,6 +9,6 @@ Resources:
       BucketName: "aws-sean-consegna-codepipeline-poc"
 
 Outputs:
-  Name:
+  BucketName:
     Description: S3 bucket name
     Value: !Ref S3
