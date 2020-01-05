@@ -1,6 +1,6 @@
 AWSTemplateFormatVersion: 2010-09-09
 
-Description: vpc for kubernetes and aws proof-of-concept
+Description: vpc for aws proof-of-concept
 
 Parameters:
   VpcName:
@@ -168,6 +168,24 @@ Resources:
       RouteTableId: !Ref NatRouteTable
       SubnetId: !Ref PrivateSubnet3
 
+  CodeBuildSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: security group for code build
+      GroupName: code-build-security-group
+      VpcId: !Ref Vpc
+      SecurityGroupIngress:
+        - CidrIp: 0.0.0.0/0
+          FromPort: 22
+          IpProtocol: tcp
+          ToPort: 22
+      SecurityGroupEgress:
+        - CidrIp: 0.0.0.0/0
+          IpProtocol: -1
+      Tags:
+        - Key: Name
+          Value: code-build-security-group
+
 Outputs:
   Name:
     Description: vpc stack name
@@ -196,3 +214,7 @@ Outputs:
   PrivateSubnetId3:
     Description: private subnet 3 id
     Value: !Ref PrivateSubnet3
+
+  CodeBuildSecurityGroupId:
+    Description: security group for codebuild
+    Value: !Ref CodeBuildSecurityGroup
