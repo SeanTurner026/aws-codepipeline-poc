@@ -4,9 +4,6 @@ Description: root template for codepipeline poc
 
 Parameters:
 
-  BucketName:
-    Type: String
-
   VpcName:
     Description: name of the vpc
     Type: String
@@ -29,18 +26,6 @@ Parameters:
       - dev
       - prod
     Default: dev
-
-  Vpc:
-    Type: AWS::EC2::VPC::Id
-
-  PrivateSubnet1:
-    Type: AWS::EC2::Subnet::Id
-
-  PrivateSubnet2:
-    Type: AWS::EC2::Subnet::Id
-
-  PrivateSubnet3:
-    Type: AWS::EC2::Subnet::Id
 
   GithubRepository:
     Type: String
@@ -65,6 +50,7 @@ Parameters:
 Resources:
   VpcStack:
     Type: AWS::CloudFormation::Stack
+    DeletionPolicy: Retain
     Properties:
       Parameters:
         VpcName: !Ref VpcName
@@ -77,6 +63,8 @@ Resources:
 
   CodeBuildStack:
     Type: AWS::CloudFormation::Stack
+    DependsOn:
+      - VpcStack
     Properties:
       Parameters:
         Environment: !Ref Environment
@@ -86,10 +74,14 @@ Resources:
         PrivateSubnet1: !GetAtt VpcStack.Outputs.PrivateSubnetId1
         PrivateSubnet2: !GetAtt VpcStack.Outputs.PrivateSubnetId2
         PrivateSubnet3: !GetAtt VpcStack.Outputs.PrivateSubnetId3
+        CodeBuildSecurityGroupId: !GetAtt VpcStack.Outputs.CodeBuildSecurityGroupId
       TemplateURL: resources/codebuild.yaml
 
   CodePipelineStack:
     Type: AWS::CloudFormation::Stack
+    DependsOn:
+      - S3Stack
+      - CodeBuildStack
     Properties:
       Parameters:
         Environment: !Ref Environment
@@ -97,5 +89,6 @@ Resources:
         GithubBranch: !Ref GithubBranch
         GithubOwner: !Ref GithubOwner
         GithubToken: !Ref GithubToken
-        S3: !GetAtt S3Stack.Outputs.BucketName
+        BucketName: !GetAtt S3Stack.Outputs.BucketName
+        BuildPushJob: !GetAtt CodeBuildStack.Outputs.BuildPushJob
       TemplateURL: resources/codepipeline.yaml
