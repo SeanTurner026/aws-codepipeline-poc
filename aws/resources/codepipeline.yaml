@@ -6,6 +6,11 @@ Parameters:
 
   BucketName:
     Type: String
+    Description: s3 bucket for code pipeline artifacts
+
+  BuildPushJob:
+    Type: String
+    Description: code build job to be invoked by code pipeline
 
   Environment:
     Type: String
@@ -41,8 +46,7 @@ Resources:
     Properties:
       RoleName: !Join
         - ""
-        - - !Ref AWS::StackName
-          - "-code-pipeline-role-"
+        - - "code-pipeline-role-"
           - !Ref Environment
       AssumeRolePolicyDocument:
         Version: "2012-10-17"
@@ -57,8 +61,7 @@ Resources:
     Properties:
       PolicyName: !Join
         - ""
-        - - !Ref AWS::StackName
-          - "-code-pipeline-policy-"
+        - - "code-pipeline-policy-"
           - !Ref Environment
       PolicyDocument:
         Version: "2012-10-17"
