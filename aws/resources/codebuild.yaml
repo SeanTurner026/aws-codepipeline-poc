@@ -33,14 +33,16 @@ Parameters:
   PrivateSubnet3:
     Type: AWS::EC2::Subnet::Id
 
+  CodeBuildSecurityGroupId:
+    Type: AWS::EC2::SecurityGroup::Id
+
 Resources:
   CodeBuildRole:
     Type: "AWS::IAM::Role"
     Properties:
-      RoleName: !Join:
+      RoleName: !Join
         - ""
-        - - !Ref AWS::StackName
-          - "-code-build-role-"
+        - - "code-build-role-"
           - !Ref Environment
       AssumeRolePolicyDocument:
         Version: "2012-10-17"
@@ -53,10 +55,9 @@ Resources:
   CodeBuildPolicy:
     Type: "AWS::IAM::Policy"
     Properties:
-      PolicyName: !Join:
+      PolicyName: !Join
         - ""
-        - - !Ref AWS::StackName
-          - "-code-build-policy-"
+        - - "code-build-policy-"
           - !Ref Environment
       PolicyDocument:
         Version: "2012-10-17"
@@ -115,22 +116,30 @@ Resources:
             - events:Remove*
             - events:Delete*
             - dynamodb:*
+            - ec2:DescribeSecurityGroups
+            - ec2:DescribeSubnets
+            - ec2:DescribeVpcs
           Resource: "*"
       Roles:
         - !Ref CodeBuildRole
 
   BuildPushJob:
     Type: "AWS::CodeBuild::Project"
+    DependsOn:
+      - CodeBuildPolicy
+      - CodeBuildRole
     Properties:
       Name: build-push-job
       Description: build and push docker containers to hub.docker
       ServiceRole: !Ref CodeBuildRole
       VpcConfig:
+        VpcId: !Ref Vpc
+        SecurityGroupIds:
+          - !Ref CodeBuildSecurityGroupId
         Subnets:
           - !Ref PrivateSubnet1
           - !Ref PrivateSubnet2
           - !Ref PrivateSubnet3
-        VpcId: !Ref Vpc
       TimeoutInMinutes: 5
       Source:
         Type: CODEPIPELINE
@@ -156,3 +165,8 @@ Resources:
         Image: aws/codebuild/python:3.7
       Artifacts:
         Type: CODEPIPELINE
+
+Outputs:
+  BuildPushJob:
+    Description: codebuild job for building and pushing docker images
+    Value: !Ref BuildPushJob
