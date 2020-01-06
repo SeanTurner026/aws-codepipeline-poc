@@ -2,4 +2,4 @@ venv/
 __pycache__/
 
 aws/cfn-package.yaml
-aws/resources/.env.*
+aws/.env*
