@@ -50,7 +50,7 @@ Parameters:
 Resources:
   VpcStack:
     Type: AWS::CloudFormation::Stack
-    DeletionPolicy: Retain
+    # DeletionPolicy: Retain
     Properties:
       Parameters:
         VpcName: !Ref VpcName
@@ -64,6 +64,7 @@ Resources:
   CodeBuildStack:
     Type: AWS::CloudFormation::Stack
     DependsOn:
+      - S3Stack
       - VpcStack
     Properties:
       Parameters:
@@ -75,13 +76,14 @@ Resources:
         PrivateSubnet2: !GetAtt VpcStack.Outputs.PrivateSubnetId2
         PrivateSubnet3: !GetAtt VpcStack.Outputs.PrivateSubnetId3
         CodeBuildSecurityGroupId: !GetAtt VpcStack.Outputs.CodeBuildSecurityGroupId
+        CodeBuildBucketName: !GetAtt S3Stack.Outputs.CodeBuildBucketName
       TemplateURL: resources/codebuild.yaml
 
   CodePipelineStack:
     Type: AWS::CloudFormation::Stack
     DependsOn:
-      - S3Stack
       - CodeBuildStack
+      - S3Stack
     Properties:
       Parameters:
         Environment: !Ref Environment
@@ -89,6 +91,6 @@ Resources:
         GithubBranch: !Ref GithubBranch
         GithubOwner: !Ref GithubOwner
         GithubToken: !Ref GithubToken
-        BucketName: !GetAtt S3Stack.Outputs.BucketName
         BuildPushJob: !GetAtt CodeBuildStack.Outputs.BuildPushJob
+        CodePipelineBucketName: !GetAtt S3Stack.Outputs.CodePipelineBucketName
       TemplateURL: resources/codepipeline.yaml

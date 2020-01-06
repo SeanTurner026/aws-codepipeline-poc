@@ -3,6 +3,10 @@ AWSTemplateFormatVersion: 2010-09-09
 Description: codebuild project for aws codepipeline poc
 
 Parameters:
+  CodeBuildBucketName:
+    Type: String
+    Description: s3 bucket for code build logs
+
   DockerUsername:
     Type: String
     Description: username for hub.docker
@@ -64,15 +68,10 @@ Resources:
         Statement:
           Effect: Allow
           Action:
-            - logs:CreateLogGroup
-            - logs:CreateLogStream
-            - logs:PutLogEvents
-            - logs:DescribeLogGroups
-            - logs:FilterLogEvents
-            - logs:DescribeLogStreams
-            - logs:DeleteLogGroup
-            - s3:putObject
-            - s3:getObject
+            - apigateway:GET
+            - apigateway:POST
+            - apigateway:PUT
+            - apigateway:DELETE
             - codebuild:*
             - cloudformation:List*
             - cloudformation:Get*
@@ -83,7 +82,24 @@ Resources:
             - cloudformation:DeleteStack
             - cloudformation:Describe*
             - cloudformation:UpdateStack
+            - cloudwatch:GetMetricStatistics
+            - dynamodb:*
+            - ec2:DeleteNetworkInterface
+            - ec2:DescribeNetworkInterfaces
+            - ec2:DescribeSecurityGroups
+            - ec2:DescribeSubnets
+            - ec2:DescribeVpcs
+            - events:Put*
+            - events:Remove*
+            - events:Delete*
             - lambda:Get*
+            - iam:CreateRole
+            - iam:GetRole
+            - iam:DeleteRolePolicy
+            - iam:DeleteRole
+            - iam:PassRole
+            - iam:PutRolePolicy
+            - kinesis:*
             - lambda:List*
             - lambda:CreateFunction
             - lambda:AddPermission
@@ -93,32 +109,21 @@ Resources:
             - lambda:PublishVersion
             - lambda:RemovePermission
             - lambda:Update*
-            - apigateway:GET
-            - apigateway:POST
-            - apigateway:PUT
-            - apigateway:DELETE
+            - logs:CreateLogGroup
+            - logs:CreateLogStream
+            - logs:DeleteLogGroup
+            - logs:DescribeLogGroups
+            - logs:DescribeLogStreams
+            - logs:FilterLogEvents
+            - logs:PutLogEvents
             - s3:CreateBucket
             - s3:DeleteBucket
+            - s3:DeleteObject
+            - s3:GetObject
             - s3:ListBucket
             - s3:ListBucketVersions
             - s3:PutObject
-            - s3:GetObject
-            - s3:DeleteObject
-            - iam:PassRole
-            - kinesis:*
-            - iam:GetRole
-            - iam:CreateRole
-            - iam:PutRolePolicy
-            - iam:DeleteRolePolicy
-            - iam:DeleteRole
-            - cloudwatch:GetMetricStatistics
-            - events:Put*
-            - events:Remove*
-            - events:Delete*
-            - dynamodb:*
-            - ec2:DescribeSecurityGroups
-            - ec2:DescribeSubnets
-            - ec2:DescribeVpcs
+            - "*"
           Resource: "*"
       Roles:
         - !Ref CodeBuildRole
@@ -146,9 +151,13 @@ Resources:
         BuildSpec: !Sub |
           version: 0.2
           phases:
+            pre_build:
+              commands:
+                - nohup /usr/bin/dockerd --host=unix:///var/run/docker.sock --host=tcp://127.0.0.1:2375 --storage-driver=overlay2& > /dev/null
+                - timeout 15 sh -c "until docker info > /dev/null; do echo .; sleep 1; done"
             build:
               commands:
-                - bash ../scripts/build-push.sh
+                - bash aws/scripts/build-push.sh
       Environment:
         Type: "LINUX_CONTAINER"
         ComputeType: BUILD_GENERAL1_SMALL
@@ -162,7 +171,13 @@ Resources:
           - Name: DOCKER_PASSWORD
             Type: PARAMETER_STORE
             Value: !Ref DockerPassword
-        Image: aws/codebuild/python:3.7
+        Image: seanturner026/custom-ci-images:codebuild
+        PrivilegedMode: true
+      LogsConfig:
+        S3Logs:
+          EncryptionDisabled: true
+          Location: !Ref CodeBuildBucketName
+          Status: ENABLED
       Artifacts:
         Type: CODEPIPELINE
 
