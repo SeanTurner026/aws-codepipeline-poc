@@ -1,0 +1,55 @@
+AWSTemplateFormatVersion: 2010-09-09
+
+Description: s3 bucket for aws codepipeline poc
+
+Parameters:
+  Environment:
+    Type: String
+    Description: environment
+    AllowedValues:
+      - dev
+      - prod
+
+Resources:
+  CodePipelineRole:
+    Type: "AWS::IAM::Role"
+    Properties:
+      RoleName: !Join
+        - ""
+        - - "code-pipeline-role-"
+          - !Ref Environment
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          Effect: "Allow"
+          Principal:
+            Service: "codepipeline.amazonaws.com"
+          Action: "sts:AssumeRole"
+
+  CodePipelinePolicy:
+    Type: "AWS::IAM::Policy"
+    Properties:
+      PolicyName: !Join
+        - ""
+        - - "code-pipeline-policy-"
+          - !Ref Environment
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          Effect: Allow
+          Action:
+            - logs:CreateLogGroup
+            - logs:CreateLogStream
+            - logs:PutLogEvents
+            - s3:PutObject
+            - s3:GetObject
+            - codebuild:*
+          Resource:
+            - "*"
+      Roles:
+        - !Ref CodePipelineRole
+
+Outputs:
+  CodePipelineRole:
+    Description: iam role for code pipeline
+    Value: !Ref CodePipelineRole

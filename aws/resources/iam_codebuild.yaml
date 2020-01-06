@@ -1,0 +1,104 @@
+AWSTemplateFormatVersion: 2010-09-09
+
+Description: s3 bucket for aws codepipeline poc
+
+Parameters:
+  Environment:
+    Type: String
+    Description: environment
+    AllowedValues:
+      - dev
+      - prod
+
+Resources:
+  CodeBuildRole:
+    Type: "AWS::IAM::Role"
+    Properties:
+      RoleName: !Join
+        - ""
+        - - "code-build-role-"
+          - !Ref Environment
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          Effect: "Allow"
+          Principal:
+            Service: "codebuild.amazonaws.com"
+          Action: "sts:AssumeRole"
+
+  CodeBuildPolicy:
+    Type: "AWS::IAM::Policy"
+    Properties:
+      PolicyName: !Join
+        - ""
+        - - "code-build-policy-"
+          - !Ref Environment
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          Effect: Allow
+          Action:
+            - apigateway:GET
+            - apigateway:POST
+            - apigateway:PUT
+            - apigateway:DELETE
+            - codebuild:*
+            - cloudformation:List*
+            - cloudformation:Get*
+            - cloudformation:PreviewStackUpdate
+            - cloudformation:ValidateTemplate
+            - cloudformation:CreateStack
+            - cloudformation:CreateUploadBucket
+            - cloudformation:DeleteStack
+            - cloudformation:Describe*
+            - cloudformation:UpdateStack
+            - cloudwatch:GetMetricStatistics
+            - dynamodb:*
+            - ec2:DeleteNetworkInterface
+            - ec2:DescribeNetworkInterfaces
+            - ec2:DescribeSecurityGroups
+            - ec2:DescribeSubnets
+            - ec2:DescribeVpcs
+            - ec2:RunInstances
+            - events:Put*
+            - events:Remove*
+            - events:Delete*
+            - lambda:Get*
+            - iam:CreateRole
+            - iam:GetRole
+            - iam:DeleteRolePolicy
+            - iam:DeleteRole
+            - iam:PassRole
+            - iam:PutRolePolicy
+            - kinesis:*
+            - lambda:List*
+            - lambda:CreateFunction
+            - lambda:AddPermission
+            - lambda:CreateAlias
+            - lambda:DeleteFunction
+            - lambda:InvokeFunction
+            - lambda:PublishVersion
+            - lambda:RemovePermission
+            - lambda:Update*
+            - logs:CreateLogGroup
+            - logs:CreateLogStream
+            - logs:DeleteLogGroup
+            - logs:DescribeLogGroups
+            - logs:DescribeLogStreams
+            - logs:FilterLogEvents
+            - logs:PutLogEvents
+            - s3:CreateBucket
+            - s3:DeleteBucket
+            - s3:DeleteObject
+            - s3:GetObject
+            - s3:ListBucket
+            - s3:ListBucketVersions
+            - s3:PutObject
+          Resource: "*"
+      Roles:
+        - !Ref CodeBuildRole
+
+Outputs:
+  CodeBuildRole:
+    Description: iam role for code build
+    Value: !Ref CodeBuildRole
