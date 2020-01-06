@@ -4,13 +4,13 @@ Description: codepipeline for aws codepipeline poc
 
 Parameters:
 
-  BucketName:
-    Type: String
-    Description: s3 bucket for code pipeline artifacts
-
   BuildPushJob:
     Type: String
     Description: code build job to be invoked by code pipeline
+
+  CodePipelineBucketName:
+    Type: String
+    Description: s3 bucket for code pipeline artifacts
 
   Environment:
     Type: String
@@ -71,8 +71,8 @@ Resources:
             - logs:CreateLogGroup
             - logs:CreateLogStream
             - logs:PutLogEvents
-            - s3:putObject
-            - s3:getObject
+            - s3:PutObject
+            - s3:GetObject
             - codebuild:*
           Resource:
             - "*"
@@ -87,7 +87,7 @@ Resources:
         - - "code-pipeline-poc-"
           - !Ref AWS::StackName
       ArtifactStore:
-        Location: !Ref BucketName
+        Location: !Ref CodePipelineBucketName
         Type: S3
       RestartExecutionOnUpdate: true
       RoleArn: !Join
