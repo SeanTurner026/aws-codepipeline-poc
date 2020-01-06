@@ -6,18 +6,17 @@ Parameters:
   CodePipelineBucketName:
     Description: name of bucket for code pipeline artifacts
     Type: String
-    Default: sean-poc-codepipeline-bucket
 
   CodeBuildBucketName:
     Description: name of bucket for code build logging
     Type: String
-    Default: sean-poc-codebuild-bucket
 
 Resources:
   CodePiplineBucket:
     Type: "AWS::S3::Bucket"
     Properties:
       BucketName: !Ref CodePipelineBucketName
+
   CodeBuildBucket:
     Type: "AWS::S3::Bucket"
     Properties:
@@ -27,6 +26,7 @@ Outputs:
   CodePipelineBucketName:
     Description: S3 bucket name for code pipeline
     Value: !Ref CodePiplineBucket
+    
   CodeBuildBucketName:
     Description: S3 bucket name for code build
     Value: !Ref CodeBuildBucket
