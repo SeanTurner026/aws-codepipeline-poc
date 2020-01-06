@@ -2,15 +2,26 @@ AWSTemplateFormatVersion: 2010-09-09
 
 Description: s3 bucket for aws codepipeline poc
 
+Parameters:
+  CodePipelineBucketName:
+    Description: name of bucket for code pipeline artifacts
+    Type: String
+    Default: sean-poc-codepipeline-bucket
+
+  CodeBuildBucketName:
+    Description: name of bucket for code build logging
+    Type: String
+    Default: sean-poc-codebuild-bucket
+
 Resources:
   CodePiplineBucket:
     Type: "AWS::S3::Bucket"
     Properties:
-      BucketName: "sean-poc-codepipeline-bucket"
+      BucketName: !Ref CodePipelineBucketName
   CodeBuildBucket:
     Type: "AWS::S3::Bucket"
     Properties:
-      BucketName: "sean-poc-codebuild-bucket"
+      BucketName: !Ref CodeBuildBucketName
 
 Outputs:
   CodePipelineBucketName:
