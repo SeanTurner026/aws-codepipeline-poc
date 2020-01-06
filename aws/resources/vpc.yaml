@@ -3,37 +3,51 @@ AWSTemplateFormatVersion: 2010-09-09
 Description: vpc for aws proof-of-concept
 
 Parameters:
-  VpcName:
-    Description: name of the vpc
+  CidrBlock:
     Type: String
-    Default: sandbox
+    Description: cidr block for vpc
 
-Mappings:
-  SubnetConfig:
-    GlobalCidr:
-      cidr: 10.0.0.0/18
-    PublicCidr1:
-      cidr: 10.0.0.0/20
-    PrivateCidr1:
-      cidr: 10.0.16.0/20
-    PrivateCidr2:
-      cidr: 10.0.32.0/20
-    PrivateCidr3:
-      cidr: 10.0.48.0/20
+  PrivateSubnet1AZ:
+    Type: String
+    Description: availability zone for private subnet 1
 
-  AvailabilityZones:
-    az1:
-      az: us-east-1a
-    az2:
-      az: us-east-1b
-    az3:
-      az: us-east-1c
+  PrivateSubnet1Cidr:
+    Type: String
+    Description: cidr block for private subnet 1
+
+  PrivateSubnet2AZ:
+    Type: String
+    Description: availability zone for private subnet 2
+
+  PrivateSubnet2Cidr:
+    Type: String
+    Description: cidr block for private subnet 2
+
+  PrivateSubnet3AZ:
+    Type: String
+    Description: availability zone for private subnet 3
+
+  PrivateSubnet3Cidr:
+    Type: String
+    Description: cidr block for private subnet 3
+
+  PublicSubnetAZ:
+    Type: String
+    Description: availability zone for public subnet 1
+
+  PublicSubnetCidr:
+    Type: String
+    Description: cidr block for public subnet 1
+
+  VpcName:
+    Type: String
+    Description: name of the vpc
 
 Resources:
   Vpc:
     Type: AWS::EC2::VPC
     Properties:
-      CidrBlock: !FindInMap [SubnetConfig, GlobalCidr, cidr]
+      CidrBlock: !Ref CidrBlock
       EnableDnsHostnames: true
       EnableDnsSupport: true
       InstanceTenancy: default
@@ -44,8 +58,8 @@ Resources:
   PublicSubnet:
     Type: AWS::EC2::Subnet
     Properties:
-      AvailabilityZone: !FindInMap [AvailabilityZones, az1, az]
-      CidrBlock: !FindInMap [SubnetConfig, PublicCidr1, cidr]
+      AvailabilityZone: !Ref PublicSubnetAZ
+      CidrBlock: !Ref PublicSubnetCidr
       VpcId: !Ref Vpc
       Tags:
         - Key: Name
@@ -54,8 +68,8 @@ Resources:
   PrivateSubnet1:
     Type: AWS::EC2::Subnet
     Properties:
-      AvailabilityZone: !FindInMap [AvailabilityZones, az1, az]
-      CidrBlock: !FindInMap [SubnetConfig, PrivateCidr1, cidr]
+      AvailabilityZone: !Ref PrivateSubnet1AZ
+      CidrBlock: !Ref PrivateSubnet1Cidr
       VpcId: !Ref Vpc
       Tags:
         - Key: Name
@@ -64,8 +78,8 @@ Resources:
   PrivateSubnet2:
     Type: AWS::EC2::Subnet
     Properties:
-      AvailabilityZone: !FindInMap [AvailabilityZones, az2, az]
-      CidrBlock: !FindInMap [SubnetConfig, PrivateCidr2, cidr]
+      AvailabilityZone: !Ref PrivateSubnet2AZ
+      CidrBlock: !Ref PrivateSubnet2Cidr
       VpcId: !Ref Vpc
       Tags:
         - Key: Name
@@ -74,8 +88,8 @@ Resources:
   PrivateSubnet3:
     Type: AWS::EC2::Subnet
     Properties:
-      AvailabilityZone: !FindInMap [AvailabilityZones, az3, az]
-      CidrBlock: !FindInMap [SubnetConfig, PrivateCidr3, cidr]
+      AvailabilityZone: !Ref PrivateSubnet3AZ
+      CidrBlock: !Ref PrivateSubnet3Cidr
       VpcId: !Ref Vpc
       Tags:
         - Key: Name
@@ -197,7 +211,7 @@ Outputs:
 
   VpcCidr:
     Description: vpc cidr block
-    Value: !FindInMap [SubnetConfig, GlobalCidr, cidr]
+    Value: !Ref CidrBlock
 
   PublicSubnetId:
     Description: public subnet id
