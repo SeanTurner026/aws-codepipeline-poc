@@ -35,7 +35,7 @@ Parameters:
   GithubRepository:
     Type: String
     Description: github repository
-    Default: aws-codepipeline-poc
+    Default: aws-codepipeline-nested-cloudformation
 
   GithubBranch:
     Type: String
