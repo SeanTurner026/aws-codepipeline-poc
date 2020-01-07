@@ -101,10 +101,10 @@ Resources:
         S3Logs:
           EncryptionDisabled: true
           # Location: !Ref CodeBuildBucketName
-        Location: !Join
-          - ""
-          - - !Ref CodeBuildBucketName
-            - "/logs"
+          Location: !Join
+            - ""
+            - - !Ref CodeBuildBucketName
+              - "/logs"
           Status: ENABLED
       Artifacts:
         Type: CODEPIPELINE
