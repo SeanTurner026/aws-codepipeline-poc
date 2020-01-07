@@ -35,7 +35,7 @@ Parameters:
   GithubRepository:
     Type: String
     Description: github repository
-    Default: aws-codepipeline-poc
+    Default: aws-codepipeline-nested-cloudformation
 
   GithubBranch:
     Type: String
@@ -85,14 +85,14 @@ Resources:
     Properties:
       Parameters:
         Environment: !Ref Environment
-      TemplateURL: resources/iam_codebuild.yaml
+      TemplateURL: cloudformation/iam_codebuild.yaml
 
   IamCodePipelineStack:
     Type: AWS::CloudFormation::Stack
     Properties:
       Parameters:
         Environment: !Ref Environment
-      TemplateURL: resources/iam_codepipeline.yaml
+      TemplateURL: cloudformation/iam_codepipeline.yaml
 
   S3Stack:
     Type: AWS::CloudFormation::Stack
@@ -100,7 +100,7 @@ Resources:
       Parameters:
         CodeBuildBucketName: !Ref CodeBuildBucketName
         CodePipelineBucketName: !Ref CodePipelineBucketName
-      TemplateURL: resources/s3.yaml
+      TemplateURL: cloudformation/s3.yaml
 
   VpcStack:
     Type: AWS::CloudFormation::Stack
@@ -121,7 +121,7 @@ Resources:
         PublicSubnetCidr: !FindInMap [SubnetConfig, PublicCidr1, cidr]
 
         VpcName: !Ref VpcName
-      TemplateURL: resources/vpc.yaml
+      TemplateURL: cloudformation/vpc.yaml
 
   CodeBuildStack:
     Type: AWS::CloudFormation::Stack
@@ -145,7 +145,7 @@ Resources:
         PrivateSubnet3: !GetAtt VpcStack.Outputs.PrivateSubnetId3
 
         Vpc: !GetAtt VpcStack.Outputs.VpcId
-      TemplateURL: resources/codebuild.yaml
+      TemplateURL: cloudformation/codebuild.yaml
 
   CodePipelineStack:
     Type: AWS::CloudFormation::Stack
@@ -166,4 +166,4 @@ Resources:
 
         CodePipelineRole: !GetAtt IamCodePipelineStack.Outputs.CodePipelineRole
         CodePipelineBucketName: !GetAtt S3Stack.Outputs.CodePipelineBucketName
-      TemplateURL: resources/codepipeline.yaml
+      TemplateURL: cloudformation/codepipeline.yaml

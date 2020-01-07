@@ -59,16 +59,11 @@ Resources:
       TimeoutInMinutes: 5
       Source:
         Type: CODEPIPELINE
-        BuildSpec: !Sub |
-          version: 0.2
-          phases:
-            pre_build:
-              commands:
-                - nohup /usr/bin/dockerd --host=unix:///var/run/docker.sock --host=tcp://127.0.0.1:2375 --storage-driver=overlay2& > /dev/null
-                - timeout 15 sh -c "until docker info > /dev/null; do echo .; sleep 1; done"
-            build:
-              commands:
-                - bash aws/scripts/build-push.sh
+        BuildSpec: !Join
+          - ""
+          - - "cloudformation/buildspecs/buildspec-"
+            - !Ref Environment
+            - ".yaml"
       Environment:
         Type: "LINUX_CONTAINER"
         ComputeType: BUILD_GENERAL1_SMALL
@@ -84,10 +79,21 @@ Resources:
             Value: !Ref DockerPassword
         Image: seanturner026/custom-ci-images:codebuild
         PrivilegedMode: true
+      Cache:
+        Type: S3
+        Location: !Join
+          - ""
+          - - !Ref CodeBuildBucketName
+            - "/cache"
+        Modes:
+          - LOCAL_DOCKER_LAYER_CACHE
       LogsConfig:
         S3Logs:
           EncryptionDisabled: true
-          Location: !Ref CodeBuildBucketName
+          Location: !Join
+            - ""
+            - - !Ref CodeBuildBucketName
+              - "/logs"
           Status: ENABLED
       Artifacts:
         Type: CODEPIPELINE
