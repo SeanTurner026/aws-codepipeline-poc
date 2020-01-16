@@ -1,6 +1,6 @@
 AWSTemplateFormatVersion: 2010-09-09
 
-Description: s3 bucket for aws codepipeline poc
+Description: iam role and policy for codepipeline for aws codepipeline poc
 
 Parameters:
   Environment:
