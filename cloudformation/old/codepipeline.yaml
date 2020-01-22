@@ -1,0 +1,94 @@
+AWSTemplateFormatVersion: 2010-09-09
+
+Description: codepipeline for aws codepipeline poc
+
+Parameters:
+
+  BuildPushJob:
+    Type: String
+    Description: code build job to be invoked by code pipeline
+
+  CodePipelineBucketName:
+    Type: String
+    Description: s3 bucket for code pipeline artifacts
+
+  CodePipelineRole:
+    Type: String
+    Description: iam role for code pipeline
+
+  Environment:
+    Type: String
+    Description: environment
+    AllowedValues:
+      - dev
+      - prod
+
+  GithubRepository:
+    Type: String
+    Description: github repository
+
+  GithubBranch:
+    Type: String
+    Description: github branch
+
+  GithubOwner:
+    Type: String
+    Description: github owner
+
+  GithubToken:
+    Type: String
+    Description: github token for codepipeline
+    NoEcho: true
+
+Resources:
+  Pipeline:
+    Type: "AWS::CodePipeline::Pipeline"
+    Properties:
+      Name: !Join
+        - ""
+        - - "code-pipeline-poc-"
+          - !Ref AWS::StackName
+      ArtifactStore:
+        Location: !Ref CodePipelineBucketName
+        Type: S3
+      RestartExecutionOnUpdate: true
+      RoleArn: !Join
+        - ""
+        - - "arn:aws:iam::"
+          - !Ref AWS::AccountId
+          - ":role/"
+          - !Ref CodePipelineRole
+      Stages:
+        - Name: checkout-source-code
+          Actions:
+            - Name: SourceAction
+              RunOrder: 1
+              ActionTypeId:
+                Category: Source
+                Owner: ThirdParty
+                Provider: GitHub
+                Version: 1
+              Configuration:
+                Owner: !Ref GithubOwner
+                Repo: !Ref GithubRepository
+                Branch: !Ref GithubBranch
+                PollForSourceChanges: true
+                OAuthToken: !Ref GithubToken
+              OutputArtifacts:
+                - Name: source-code
+
+        - Name: docker-build-push
+          Actions:
+            - Name: build-push-job
+              RunOrder: 1
+              InputArtifacts:
+                - Name: source-code
+              ActionTypeId:
+                Category: Build
+                Owner: AWS
+                Provider: CodeBuild
+                Version: 1
+              Configuration:
+                ProjectName: !Ref BuildPushJob
+              OutputArtifacts:
+                - Name: build-push-job

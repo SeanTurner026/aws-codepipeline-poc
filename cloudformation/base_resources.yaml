@@ -1,0 +1,433 @@
+AWSTemplateFormatVersion: 2010-09-09
+
+Description: base stack deployed by code pipeline
+
+Parameters:
+  CodeBuildBucketName:
+    Description: name of bucket for code build logging
+    Type: String
+    Default: sean-poc-codebuild-bucket
+
+  CodePipelineBucketName:
+    Description: name of bucket for code pipeline artifacts
+    Type: String
+    Default: sean-poc-codepipeline-bucket
+
+  Environment:
+    Type: String
+    Description: environment
+    Default: dev
+    AllowedValues:
+      - dev
+      - prod
+
+  VpcName:
+    Description: name of the vpc
+    Type: String
+    Default: sandbox
+
+Mappings:
+  SubnetConfig:
+    GlobalCidr:
+      cidr: 10.0.0.0/18
+    PublicCidr1:
+      cidr: 10.0.0.0/20
+    PrivateCidr1:
+      cidr: 10.0.16.0/20
+    PrivateCidr2:
+      cidr: 10.0.32.0/20
+    PrivateCidr3:
+      cidr: 10.0.48.0/20
+
+  AvailabilityZones:
+    az1:
+      az: ap-southeast-2a
+    az2:
+      az: ap-southeast-2b
+    az3:
+      az: ap-southeast-2c
+
+Resources:
+  CodePiplineBucket:
+    Type: "AWS::S3::Bucket"
+    Properties:
+      BucketName: !Ref CodePipelineBucketName
+      Tags:
+        - Key: Owner
+          Value: Sean-Turner
+
+  CodeBuildBucket:
+    Type: "AWS::S3::Bucket"
+    Properties:
+      BucketName: !Ref CodeBuildBucketName
+      Tags:
+        - Key: Owner
+          Value: Sean-Turner
+
+  Vpc:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: !Ref CidrBlock
+      EnableDnsHostnames: true
+      EnableDnsSupport: true
+      InstanceTenancy: default
+      Tags:
+        - Key: Name
+          Value: !Ref VpcName
+        - Key: Owner
+          Value: Sean-Turner
+
+  PublicSubnet:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: !Ref PublicSubnetAZ
+      CidrBlock: !Ref PublicSubnetCidr
+      VpcId: !Ref Vpc
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::StackName}-public-subnet-1"
+        - Key: Owner
+          Value: Sean-Turner
+
+  PrivateSubnet1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: !Ref PrivateSubnet1AZ
+      CidrBlock: !Ref PrivateSubnet1Cidr
+      VpcId: !Ref Vpc
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::StackName}-private-subnet-1"
+        - Key: Owner
+          Value: Sean-Turner
+
+  PrivateSubnet2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: !Ref PrivateSubnet2AZ
+      CidrBlock: !Ref PrivateSubnet2Cidr
+      VpcId: !Ref Vpc
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::StackName}-private-subnet-2"
+        - Key: Owner
+          Value: Sean-Turner
+
+  PrivateSubnet3:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: !Ref PrivateSubnet3AZ
+      CidrBlock: !Ref PrivateSubnet3Cidr
+      VpcId: !Ref Vpc
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::StackName}-private-subnet-3"
+        - Key: Owner
+          Value: Sean-Turner
+
+  InternetGateway:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::StackName}-igw"
+        - Key: Owner
+          Value: Sean-Turner
+
+  VPCGatewayAttachment:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      VpcId: !Ref Vpc
+      InternetGatewayId: !Ref InternetGateway
+
+  PublicRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref Vpc
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::StackName}-public-rt"
+        - Key: Owner
+          Value: Sean-Turner
+
+  PublicRoute:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref PublicRouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref InternetGateway
+
+  PublicRouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref PublicRouteTable
+      SubnetId: !Ref PublicSubnet
+
+  PublicNetworkAclAssociation:
+    Type: AWS::EC2::SubnetNetworkAclAssociation
+    Properties:
+      SubnetId: !Ref PublicSubnet
+      NetworkAclId: !GetAtt Vpc.DefaultNetworkAcl
+
+  NatEip:
+    Type: AWS::EC2::EIP
+    Properties:
+      Domain: vpc
+
+  NatGateway:
+    Type: AWS::EC2::NatGateway
+    Properties:
+      AllocationId: !GetAtt NatEip.AllocationId
+      SubnetId: !Ref PublicSubnet
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::StackName}-nat-gw"
+        - Key: Owner
+          Value: Sean-Turner
+
+  NatRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref Vpc
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::StackName}-nat-rt"
+        - Key: Owner
+          Value: Sean-Turner
+
+  NatRoute:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref NatRouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      NatGatewayId: !Ref NatGateway
+
+  PrivateRouteTableAssociation1:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref NatRouteTable
+      SubnetId: !Ref PrivateSubnet1
+
+  PrivateRouteTableAssociation2:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref NatRouteTable
+      SubnetId: !Ref PrivateSubnet2
+
+  PrivateRouteTableAssociation3:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref NatRouteTable
+      SubnetId: !Ref PrivateSubnet3
+
+  CodeBuildSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: security group for code build
+      GroupName: code-build-security-group
+      VpcId: !Ref Vpc
+      SecurityGroupIngress:
+        - CidrIp: 0.0.0.0/0
+          FromPort: 22
+          IpProtocol: tcp
+          ToPort: 22
+      SecurityGroupEgress:
+        - CidrIp: 0.0.0.0/0
+          IpProtocol: -1
+      Tags:
+        - Key: Name
+          Value: code-build-security-group
+        - Key: Owner
+          Value: Sean-Turner
+
+  CodeBuildRole:
+    Type: "AWS::IAM::Role"
+    Properties:
+      RoleName: !Join
+        - ""
+        - - "code-build-role-"
+          - !Ref Environment
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          Effect: "Allow"
+          Principal:
+            Service: "codebuild.amazonaws.com"
+          Action: "sts:AssumeRole"
+      Tags:
+        - Key: Owner
+          Value: Sean-Turner
+
+  CodeBuildPolicy:
+    Type: "AWS::IAM::Policy"
+    Properties:
+      PolicyName: !Join
+        - ""
+        - - "code-build-policy-"
+          - !Ref Environment
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          Effect: Allow
+          Action:
+            - apigateway:GET
+            - apigateway:POST
+            - apigateway:PUT
+            - apigateway:DELETE
+            - codebuild:*
+            - cloudformation:List*
+            - cloudformation:Get*
+            - cloudformation:PreviewStackUpdate
+            - cloudformation:ValidateTemplate
+            - cloudformation:CreateStack
+            - cloudformation:CreateUploadBucket
+            - cloudformation:DeleteStack
+            - cloudformation:Describe*
+            - cloudformation:UpdateStack
+            - cloudwatch:GetMetricStatistics
+            - dynamodb:*
+            - ec2:*
+            - ecr:*
+            - events:Put*
+            - events:Remove*
+            - events:Delete*
+            - lambda:Get*
+            - iam:CreateRole
+            - iam:GetRole
+            - iam:DeleteRolePolicy
+            - iam:DeleteRole
+            - iam:PassRole
+            - iam:PutRolePolicy
+            - kinesis:*
+            - lambda:List*
+            - lambda:CreateFunction
+            - lambda:AddPermission
+            - lambda:CreateAlias
+            - lambda:DeleteFunction
+            - lambda:InvokeFunction
+            - lambda:PublishVersion
+            - lambda:RemovePermission
+            - lambda:Update*
+            - logs:CreateLogGroup
+            - logs:CreateLogStream
+            - logs:DeleteLogGroup
+            - logs:DescribeLogGroups
+            - logs:DescribeLogStreams
+            - logs:FilterLogEvents
+            - logs:PutLogEvents
+            - s3:CreateBucket
+            - s3:DeleteBucket
+            - s3:DeleteObject
+            - s3:GetObject
+            - s3:ListBucket
+            - s3:ListBucketVersions
+            - s3:PutObject
+            - ssm:GetParameters
+          Resource: "*"
+      Roles:
+        - !Ref CodeBuildRole
+
+  BuildPushJob:
+    DependsOn:
+      - CodeBuildPolicy
+      - CodeBuildRole
+      - PrivateRouteTableAssociation1
+      - PrivateRouteTableAssociation2
+      - PrivateRouteTableAssociation3
+      - Vpc
+    Type: "AWS::CodeBuild::Project"
+    Properties:
+      Name: build-push-job
+      Description: build and push docker containers to ecr
+      ServiceRole: !Ref CodeBuildRole
+      VpcConfig:
+        VpcId: !Ref Vpc
+        SecurityGroupIds:
+          - !Ref CodeBuildSecurityGroup
+        Subnets:
+          - !Ref PrivateSubnet1
+          - !Ref PrivateSubnet2
+          - !Ref PrivateSubnet3
+      TimeoutInMinutes: 5
+      Source:
+        Type: CODEPIPELINE
+        BuildSpec: !Join
+          - ""
+          - - "cloudformation/buildspecs/buildspec-"
+            - !Ref Environment
+            - ".yaml"
+      Environment:
+        Type: "LINUX_CONTAINER"
+        ComputeType: BUILD_GENERAL1_SMALL
+        EnvironmentVariables:
+          - Name: ENVIRONMENT
+            Type: PLAINTEXT
+            Value: !Ref Environment
+        Image: seanturner026/custom-ci-images:codebuild
+        PrivilegedMode: true
+      Cache:
+        Type: S3
+        Location: !Join
+          - ""
+          - - !Ref CodeBuildBucketName
+            - "/cache"
+        Modes:
+          - LOCAL_DOCKER_LAYER_CACHE
+      LogsConfig:
+        S3Logs:
+          EncryptionDisabled: true
+          Location: !Join
+            - ""
+            - - !Ref CodeBuildBucketName
+              - "/logs"
+          Status: ENABLED
+      Artifacts:
+        Type: CODEPIPELINE
+      Tags:
+        - Key: Owner
+          Value: Sean-Turner
+
+Outputs:
+  CodePipelineBucketName:
+    Description: S3 bucket name for code pipeline
+    Value: !Ref CodePiplineBucket
+
+  CodeBuildBucketName:
+    Description: S3 bucket name for code build
+    Value: !Ref CodeBuildBucket
+
+  VpcId:
+    Description: vpc id
+    Value: !Ref Vpc
+
+  VpcCidr:
+    Description: vpc cidr block
+    Value: !Ref CidrBlock
+
+  PublicSubnetId:
+    Description: public subnet id
+    Value: !Ref PublicSubnet
+
+  PrivateSubnetId1:
+    Description: private subnet 1 id
+    Value: !Ref PrivateSubnet1
+
+  PrivateSubnetId2:
+    Description: private subnet 2 id
+    Value: !Ref PrivateSubnet2
+
+  PrivateSubnetId3:
+    Description: private subnet 3 id
+    Value: !Ref PrivateSubnet3
+
+  CodeBuildSecurityGroupId:
+    Description: security group for codebuild
+    Value: !Ref CodeBuildSecurityGroup
+
+  BuildPushJob:
+    Description: codebuild job for building and pushing docker images
+    Value: !Ref BuildPushJob
+
+  CodeBuildRole:
+    Description: iam role for code build
+    Value: !Ref CodeBuildRole
