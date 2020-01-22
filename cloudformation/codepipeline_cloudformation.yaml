@@ -129,6 +129,8 @@ Resources:
               OutputArtifacts:
                 - Name: source-code
 
+        - Name: cloudformation-create-stack
+          Actions:
             - Name: CreateStack
               RunOrder: 1
               InputArtifacts:
