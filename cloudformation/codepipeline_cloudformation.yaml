@@ -129,23 +129,23 @@ Resources:
               OutputArtifacts:
                 - Name: source-code
 
-        - Name: cloudformation-create-stack
-          Actions:
-            - Name: CreateStack
-              RunOrder: 1
-              InputArtifacts:
-                - Name: source-code
-              ActionTypeId:
-                Category: Deploy
-                Owner: AWS
-                Provider: Cloudformation
-                Version: 1
-              Configuration:
-                ActionMode: REPLACE_ON_FAILURE
-                Capabilities: CAPABILITY_NAMED_IAM
-                RoleArn: !Ref CodePipelineRole
-                StackName: code-pipeline-cloudformation
-                TemplatePath: "SourceArtifact::cloudformation/base_resources.yaml"
+            - Name: cloudformation-create-stack
+              Actions:
+                - Name: CreateStack
+                  RunOrder: 1
+                  InputArtifacts:
+                    - Name: source-code
+                  ActionTypeId:
+                    Category: Deploy
+                    Owner: AWS
+                    Provider: Cloudformation
+                    Version: 1
+                  Configuration:
+                    ActionMode: REPLACE_ON_FAILURE
+                    Capabilities: CAPABILITY_NAMED_IAM
+                    RoleArn: !Ref CodePipelineRole
+                    StackName: code-pipeline-cloudformation
+                    TemplatePath: "SourceArtifact::cloudformation/base_resources.yaml"
               # OutputArtifacts:
       Tags:
         - Key: Owner
