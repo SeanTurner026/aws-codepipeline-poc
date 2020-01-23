@@ -232,11 +232,7 @@ Resources:
       TimeoutInMinutes: 5
       Source:
         Type: CODEPIPELINE
-        BuildSpec: !Join
-          - ""
-          - - "cloudformation/buildspecs/buildspec_"
-            - !Ref Environment
-            - ".yaml"
+        BuildSpec: cloudformation/buildspecs/buildspec_dev.yaml
       Environment:
         Type: "LINUX_CONTAINER"
         ComputeType: BUILD_GENERAL1_SMALL
