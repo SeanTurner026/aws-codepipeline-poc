@@ -138,7 +138,7 @@ Resources:
                 Capabilities: CAPABILITY_NAMED_IAM
                 RoleArn: !GetAtt CodePipelineRole.Arn
                 StackName: code-pipeline-cloudformation
-                TemplatePath: "SourceArtifact::cloudformation/base_resources.yaml"
+                TemplatePath: "source-code::cloudformation/base_resources.yaml"
               InputArtifacts:
                 - Name: source-code
               # OutputArtifacts:
