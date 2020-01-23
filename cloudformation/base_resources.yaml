@@ -240,22 +240,22 @@ Outputs:
     Description: public subnet id
     Value: !Ref PublicSubnet
     Export:
-      Name: !Sub "${AWS::StackName}-code-build-bucket-name"
+      Name: !Sub "${AWS::StackName}-public-subnet-id"
 
   PrivateSubnetId1:
     Description: private subnet 1 id
     Value: !Ref PrivateSubnet1
     Export:
-      Name: !Sub "${AWS::StackName}-code-build-bucket-name"
+      Name: !Sub "${AWS::StackName}-private-1-subnet-id"
 
   PrivateSubnetId2:
     Description: private subnet 2 id
     Value: !Ref PrivateSubnet2
     Export:
-      Name: !Sub "${AWS::StackName}-code-build-bucket-name"
+      Name: !Sub "${AWS::StackName}-private-2-subnet-id"
 
   PrivateSubnetId3:
     Description: private subnet 3 id
     Value: !Ref PrivateSubnet3
     Export:
-      Name: !Sub "${AWS::StackName}-code-build-bucket-name"
+      Name: !Sub "${AWS::StackName}-private-3-subnet-id"
