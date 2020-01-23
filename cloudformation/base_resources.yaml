@@ -218,19 +218,19 @@ Outputs:
     Description: S3 bucket name for code pipeline
     Value: !Ref CodePiplineBucket
     Export:
-      Name: !Sub "${AWS::StackName}"-code-pipeline-bucket-name
+      Name: !Sub "${AWS::StackName}-code-pipeline-bucket-name"
 
   CodeBuildBucketName:
     Description: S3 bucket name for code build
     Value: !Ref CodeBuildBucket
     Export:
-      Name: !Sub "${AWS::StackName}"-code-build-bucket-name
+      Name: !Sub "${AWS::StackName}-code-build-bucket-name"
 
   VpcId:
     Description: vpc id
     Value: !Ref Vpc
     Export:
-      Name: !Sub "${AWS::StackName}"-vpc-id
+      Name: !Sub "${AWS::StackName}-vpc-id"
 
   VpcCidr:
     Description: vpc cidr block
@@ -240,22 +240,22 @@ Outputs:
     Description: public subnet id
     Value: !Ref PublicSubnet
     Export:
-      Name: !Sub "${AWS::StackName}"-code-build-bucket-name
+      Name: !Sub "${AWS::StackName}-code-build-bucket-name"
 
   PrivateSubnetId1:
     Description: private subnet 1 id
     Value: !Ref PrivateSubnet1
     Export:
-      Name: !Sub "${AWS::StackName}"-code-build-bucket-name
+      Name: !Sub "${AWS::StackName}-code-build-bucket-name"
 
   PrivateSubnetId2:
     Description: private subnet 2 id
     Value: !Ref PrivateSubnet2
     Export:
-      Name: !Sub "${AWS::StackName}"-code-build-bucket-name
+      Name: !Sub "${AWS::StackName}-code-build-bucket-name"
 
   PrivateSubnetId3:
     Description: private subnet 3 id
     Value: !Ref PrivateSubnet3
     Export:
-      Name: !Sub "${AWS::StackName}"-code-build-bucket-name
+      Name: !Sub "${AWS::StackName}-code-build-bucket-name"
