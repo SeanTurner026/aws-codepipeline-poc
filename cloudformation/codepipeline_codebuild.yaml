@@ -84,7 +84,9 @@ Resources:
     Properties:
       GroupDescription: security group for code build
       GroupName: codebuild-security-group
-      VpcId: !Ref Vpc
+      VpcId:
+        Fn::ImportValue:
+          !Sub  "${BaseStackName}-vpc-id"
       SecurityGroupIngress:
         - CidrIp: 0.0.0.0/0
           FromPort: 22
@@ -213,7 +215,9 @@ Resources:
       Description: build and push docker containers to ecr
       ServiceRole: !Ref CodeBuildRole
       VpcConfig:
-        VpcId: !Ref Vpc
+        VpcId:
+          Fn::ImportValue:
+            !Sub  "${BaseStackName}-vpc-id"
         SecurityGroupIds:
           - !Ref CodeBuildSecurityGroup
         Subnets:
@@ -267,7 +271,7 @@ Resources:
       ArtifactStore:
         Location:
           Fn::ImportValue:
-            !Sub  "${CodePipelineBucketName}-code-pipeline-bucket-name"
+            !Sub  "${BaseStackName}-code-pipeline-bucket-name"
         Type: S3
       RestartExecutionOnUpdate: true
       RoleArn: !GetAtt CodePipelineRole
