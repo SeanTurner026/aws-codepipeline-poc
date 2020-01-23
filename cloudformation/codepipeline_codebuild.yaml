@@ -234,7 +234,7 @@ Resources:
         Type: CODEPIPELINE
         BuildSpec: !Join
           - ""
-          - - "cloudformation/buildspecs/buildspec-"
+          - - "cloudformation/buildspecs/buildspec_"
             - !Ref Environment
             - ".yaml"
       Environment:
