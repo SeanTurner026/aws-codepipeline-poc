@@ -4,11 +4,6 @@ Description: base stack deployed by code pipeline
 
 Parameters:
 
-  CidrBlock:
-    Type: String
-    Description: cidr block for vpc
-    Default: 10.0.0.0/18
-
   CodeBuildBucketName:
     Description: name of bucket for code build logging
     Type: String
@@ -73,7 +68,7 @@ Resources:
   Vpc:
     Type: AWS::EC2::VPC
     Properties:
-      CidrBlock: !Ref CidrBlock
+      CidrBlock: !FindInMap [SubnetConfig, GlobalCidr, cidr]
       EnableDnsHostnames: true
       EnableDnsSupport: true
       InstanceTenancy: default
@@ -86,8 +81,8 @@ Resources:
   PublicSubnet:
     Type: AWS::EC2::Subnet
     Properties:
-      AvailabilityZone: !Ref PublicSubnetAZ
-      CidrBlock: !Ref PublicSubnetCidr
+      AvailabilityZone: !FindInMap [AvailabilityZones, az1, az]
+      CidrBlock: !FindInMap [SubnetConfig, PublicCidr1, cidr]
       VpcId: !Ref Vpc
       Tags:
         - Key: Name
@@ -98,8 +93,8 @@ Resources:
   PrivateSubnet1:
     Type: AWS::EC2::Subnet
     Properties:
-      AvailabilityZone: !Ref PrivateSubnet1AZ
-      CidrBlock: !Ref PrivateSubnet1Cidr
+      AvailabilityZone: !FindInMap [AvailabilityZones, az1, az]
+      CidrBlock: !FindInMap [SubnetConfig, PrivateCidr1, cidr]
       VpcId: !Ref Vpc
       Tags:
         - Key: Name
@@ -110,8 +105,8 @@ Resources:
   PrivateSubnet2:
     Type: AWS::EC2::Subnet
     Properties:
-      AvailabilityZone: !Ref PrivateSubnet2AZ
-      CidrBlock: !Ref PrivateSubnet2Cidr
+      AvailabilityZone: !FindInMap [AvailabilityZones, az2, az]
+      CidrBlock: !FindInMap [SubnetConfig, PrivateCidr2, cidr]
       VpcId: !Ref Vpc
       Tags:
         - Key: Name
@@ -122,8 +117,8 @@ Resources:
   PrivateSubnet3:
     Type: AWS::EC2::Subnet
     Properties:
-      AvailabilityZone: !Ref PrivateSubnet3AZ
-      CidrBlock: !Ref PrivateSubnet3Cidr
+      AvailabilityZone: !FindInMap [AvailabilityZones, az3, az]
+      CidrBlock: !FindInMap [SubnetConfig, PrivateCidr3, cidr]
       VpcId: !Ref Vpc
       Tags:
         - Key: Name
@@ -408,7 +403,7 @@ Outputs:
 
   VpcCidr:
     Description: vpc cidr block
-    Value: !Ref CidrBlock
+    Value: !GetAtt Vpc.CidrBlock
 
   PublicSubnetId:
     Description: public subnet id
