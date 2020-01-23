@@ -116,6 +116,20 @@ Resources:
         - Key: Owner
           Value: Sean Turner
 
+  # EcrPolicy:
+  #   Type: AWS::IAM::Policy
+  #   Properties:
+  #     PolicyName: sean-ecr-policy
+  #     PolicyDocument:
+  #       Version: "2008-10-17"
+  #       Statement:
+  #       - Effect: Allow
+  #         Action:
+  #         - ecr:*
+  #         Resource: "*"
+  #     Roles:
+  #       - !Ref CodeBuildRole
+
   CodeBuildPolicy:
     Type: "AWS::IAM::Policy"
     Properties:
@@ -181,25 +195,13 @@ Resources:
           Resource: "*"
       Roles:
         - !Ref CodeBuildRole
-
-  EcrPolicy:
-    Type: AWS::IAM::Policy
-    Properties:
-      PolicyName: sean-ecr-policy
-      PolicyDocument:
-        Version: "2008-10-17"
-        Statement:
-        - Sid: ECR Repository Policy
-          Effect: Allow
-          Action:
-          - ecr:*
-          Resource: "*"
+        # - !Ref EcrPolicy
 
   EcrRepository:
     Type: AWS::ECR::Repository
     Properties:
       RepositoryName: sean_codepipeline_poc
-      RepositoryPolicyText: !Ref EcrPolicy
+      # RepositoryPolicyText: !Ref EcrPolicy
       Tags:
         - Key: Owner
           Value: Sean Turner
@@ -242,21 +244,28 @@ Resources:
           - Name: ENVIRONMENT
             Type: PLAINTEXT
             Value: !Ref Environment
+          - Name: REPOSITORY_URI
+            Type: PLAINTEXT
+            Value: !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${EcrRepository}
         Image: seanturner026/custom-ci-images:codebuild
         PrivilegedMode: true
       Cache:
         Type: S3
-        Location:
-          Fn::ImportValue:
-            !Sub "${BaseStackName}-code-build-bucket-name/cache"
+        Location: !Join
+          - "/"
+          - - Fn::ImportValue:
+                !Sub "${BaseStackName}-code-build-bucket-name"
+            - cache
         Modes:
           - LOCAL_DOCKER_LAYER_CACHE
       LogsConfig:
         S3Logs:
           EncryptionDisabled: true
-          Location:
-            Fn::ImportValue:
-              !Sub "${BaseStackName}-code-build-bucket-name/logs"
+          Location: !Join
+            - "/"
+            - - Fn::ImportValue:
+                  !Sub "${BaseStackName}-code-build-bucket-name"
+              - logs
           Status: ENABLED
       Artifacts:
         Type: CODEPIPELINE
@@ -274,7 +283,7 @@ Resources:
             !Sub  "${BaseStackName}-code-pipeline-bucket-name"
         Type: S3
       RestartExecutionOnUpdate: true
-      RoleArn: !GetAtt CodePipelineRole
+      RoleArn: !GetAtt CodePipelineRole.Arn
       Stages:
         - Name: checkout_source_code
           Actions:
