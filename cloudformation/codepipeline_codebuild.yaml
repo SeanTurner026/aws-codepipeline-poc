@@ -12,6 +12,7 @@ Parameters:
   Environment:
     Type: String
     Description: environment
+    Default: dev
     AllowedValues:
       - dev
       - prod
