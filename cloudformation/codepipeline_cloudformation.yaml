@@ -81,12 +81,15 @@ Resources:
           Action:
             - cloudformation:*
             - codebuild:*
+            - ec2:*
+            - iam:GetRole
             - iam:PassRole
             - logs:CreateLogGroup
             - logs:CreateLogStream
             - logs:PutLogEvents
-            - s3:PutObject
-            - s3:GetObject
+            - s3:*
+            # - s3:PutObject
+            # - s3:GetObject
           Resource:
             - "*"
       Roles:
