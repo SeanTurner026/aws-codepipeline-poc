@@ -4,18 +4,25 @@ Description: codepipeline for aws codepipeline poc
 
 Parameters:
 
+  CodePipelineCloudformationRoleName:
+    Type: String
+    Description: iam role name
+    Default: code-pipeline-cloudformation-role
+
+  CodePipelineCloudformationPolicyName:
+    Type: String
+    Description: iam policy name
+    Default: code-pipeline-cloudformation-policy
+
   CodePipelineCloudformationBucketName:
     Type: String
     Description: s3 bucket for code pipeline artifacts
-    Default: sean-poc-codepipeline-cloudformation-bucket
+    Default: sean-codepipeline-cloudformation-bucket
 
-  Environment:
+  CloudformationBaseStackName:
     Type: String
-    Description: environment
-    AllowedValues:
-      - dev
-      - prod
-    Default: dev
+    Description: name of stack to be deployed by the codepipeline deployed by this template
+    Default: sean-codepipeline-cloudformation-base
 
   GithubRepository:
     Type: String
@@ -45,15 +52,12 @@ Resources:
       BucketName: !Ref CodePipelineCloudformationBucketName
       Tags:
         - Key: Owner
-          Value: Sean-Turner
+          Value: Sean Turner
 
-  CodePipelineRole:
+  CodePipelineCloudformationRole:
     Type: "AWS::IAM::Role"
     Properties:
-      RoleName: !Join
-        - ""
-        - - "code-pipeline-role-"
-          - !Ref Environment
+      RoleName: !Ref CodePipelineCloudformationRoleName
       AssumeRolePolicyDocument:
         Version: "2012-10-17"
         Statement:
@@ -65,15 +69,12 @@ Resources:
           Action: "sts:AssumeRole"
       Tags:
         - Key: Owner
-          Value: Sean-Turner
+          Value: Sean Turner
 
-  CodePipelinePolicy:
+  CodePipelineCloudformationPolicy:
     Type: "AWS::IAM::Policy"
     Properties:
-      PolicyName: !Join
-        - ""
-        - - "code-pipeline-policy-"
-          - !Ref Environment
+      PolicyName: !Ref CodePipelineCloudformationPolicyName
       PolicyDocument:
         Version: "2012-10-17"
         Statement:
@@ -82,37 +83,28 @@ Resources:
             - cloudformation:*
             - codebuild:*
             - ec2:*
-            - iam:GetRole
-            - iam:PassRole
-            - logs:CreateLogGroup
-            - logs:CreateLogStream
-            - logs:PutLogEvents
+            - iam:*
             - s3:*
-            # - s3:PutObject
-            # - s3:GetObject
           Resource:
             - "*"
       Roles:
-        - !Ref CodePipelineRole
+        - !Ref CodePipelineCloudformationRole
 
   Pipeline:
     Type: "AWS::CodePipeline::Pipeline"
     DependsOn:
       - CodePipelineCloudformationBucket
-      - CodePipelineRole
-      - CodePipelinePolicy
+      - CodePipelineCloudformationRole
+      - CodePipelineCloudformationPolicy
     Properties:
-      Name: !Join
-        - ""
-        - - "code-pipeline-poc-"
-          - !Ref AWS::StackName
+      Name: !Ref AWS::StackName
       ArtifactStore:
         Location: !Ref CodePipelineCloudformationBucketName
         Type: S3
       RestartExecutionOnUpdate: true
-      RoleArn: !GetAtt CodePipelineRole.Arn
+      RoleArn: !GetAtt CodePipelineCloudformationRole.Arn
       Stages:
-        - Name: checkout-source-code
+        - Name: checkout_source_code
           Actions:
             - Name: SourceAction
               ActionTypeId:
@@ -127,8 +119,8 @@ Resources:
                 PollForSourceChanges: true
                 OAuthToken: !Ref GithubToken
               OutputArtifacts:
-                - Name: source-code
-        - Name: cloudformation-create-stack
+                - Name: source_code
+        - Name: cloudformation_create_stack
           Actions:
             - Name: CreateStack
               ActionTypeId:
@@ -139,12 +131,11 @@ Resources:
               Configuration:
                 ActionMode: REPLACE_ON_FAILURE
                 Capabilities: CAPABILITY_NAMED_IAM
-                RoleArn: !GetAtt CodePipelineRole.Arn
-                StackName: code-pipeline-cloudformation
-                TemplatePath: "source-code::cloudformation/base_resources.yaml"
+                RoleArn: !GetAtt CodePipelineCloudformationRole.Arn
+                StackName: !Ref CloudformationBaseStackName
+                TemplatePath: "source_code::cloudformation/base_resources.yaml"
               InputArtifacts:
-                - Name: source-code
-              # OutputArtifacts:
+                - Name: source_code
       Tags:
         - Key: Owner
-          Value: Sean-Turner
+          Value: Sean Turner

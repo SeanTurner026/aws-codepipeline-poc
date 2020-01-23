@@ -26,7 +26,7 @@ Resources:
             Service: "codepipeline.amazonaws.com"
           Action: "sts:AssumeRole"
 
-  CodePipelinePolicy:
+  CodePipelineCloudFormationPolicy:
     Type: "AWS::IAM::Policy"
     Properties:
       PolicyName: !Join

@@ -7,20 +7,12 @@ Parameters:
   CodeBuildBucketName:
     Description: name of bucket for code build logging
     Type: String
-    Default: sean-poc-codebuild-bucket
+    Default: sean-codebuild-bucket
 
   CodePipelineBucketName:
     Description: name of bucket for code pipeline artifacts
     Type: String
-    Default: sean-poc-codepipeline-bucket
-
-  Environment:
-    Type: String
-    Description: environment
-    Default: dev
-    AllowedValues:
-      - dev
-      - prod
+    Default: sean-codepipeline-bucket
 
   VpcName:
     Description: name of the vpc
@@ -55,7 +47,7 @@ Resources:
       BucketName: !Ref CodePipelineBucketName
       Tags:
         - Key: Owner
-          Value: Sean-Turner
+          Value: Sean Turner
 
   CodeBuildBucket:
     Type: "AWS::S3::Bucket"
@@ -63,7 +55,7 @@ Resources:
       BucketName: !Ref CodeBuildBucketName
       Tags:
         - Key: Owner
-          Value: Sean-Turner
+          Value: Sean Turner
 
   Vpc:
     Type: AWS::EC2::VPC
@@ -76,7 +68,7 @@ Resources:
         - Key: Name
           Value: !Ref VpcName
         - Key: Owner
-          Value: Sean-Turner
+          Value: Sean Turner
 
   PublicSubnet:
     Type: AWS::EC2::Subnet
@@ -88,7 +80,7 @@ Resources:
         - Key: Name
           Value: !Sub "${AWS::StackName}-public-subnet-1"
         - Key: Owner
-          Value: Sean-Turner
+          Value: Sean Turner
 
   PrivateSubnet1:
     Type: AWS::EC2::Subnet
@@ -100,7 +92,7 @@ Resources:
         - Key: Name
           Value: !Sub "${AWS::StackName}-private-subnet-1"
         - Key: Owner
-          Value: Sean-Turner
+          Value: Sean Turner
 
   PrivateSubnet2:
     Type: AWS::EC2::Subnet
@@ -112,7 +104,7 @@ Resources:
         - Key: Name
           Value: !Sub "${AWS::StackName}-private-subnet-2"
         - Key: Owner
-          Value: Sean-Turner
+          Value: Sean Turner
 
   PrivateSubnet3:
     Type: AWS::EC2::Subnet
@@ -124,7 +116,7 @@ Resources:
         - Key: Name
           Value: !Sub "${AWS::StackName}-private-subnet-3"
         - Key: Owner
-          Value: Sean-Turner
+          Value: Sean Turner
 
   InternetGateway:
     Type: AWS::EC2::InternetGateway
@@ -133,7 +125,7 @@ Resources:
         - Key: Name
           Value: !Sub "${AWS::StackName}-igw"
         - Key: Owner
-          Value: Sean-Turner
+          Value: Sean Turner
 
   VPCGatewayAttachment:
     Type: AWS::EC2::VPCGatewayAttachment
@@ -149,7 +141,7 @@ Resources:
         - Key: Name
           Value: !Sub "${AWS::StackName}-public-rt"
         - Key: Owner
-          Value: Sean-Turner
+          Value: Sean Turner
 
   PublicRoute:
     Type: AWS::EC2::Route
@@ -184,7 +176,7 @@ Resources:
         - Key: Name
           Value: !Sub "${AWS::StackName}-nat-gw"
         - Key: Owner
-          Value: Sean-Turner
+          Value: Sean Turner
 
   NatRouteTable:
     Type: AWS::EC2::RouteTable
@@ -194,7 +186,7 @@ Resources:
         - Key: Name
           Value: !Sub "${AWS::StackName}-nat-rt"
         - Key: Owner
-          Value: Sean-Turner
+          Value: Sean Turner
 
   NatRoute:
     Type: AWS::EC2::Route
@@ -221,185 +213,24 @@ Resources:
       RouteTableId: !Ref NatRouteTable
       SubnetId: !Ref PrivateSubnet3
 
-  CodeBuildSecurityGroup:
-    Type: AWS::EC2::SecurityGroup
-    Properties:
-      GroupDescription: security group for code build
-      GroupName: code-build-security-group
-      VpcId: !Ref Vpc
-      SecurityGroupIngress:
-        - CidrIp: 0.0.0.0/0
-          FromPort: 22
-          IpProtocol: tcp
-          ToPort: 22
-      SecurityGroupEgress:
-        - CidrIp: 0.0.0.0/0
-          IpProtocol: -1
-      Tags:
-        - Key: Name
-          Value: code-build-security-group
-        - Key: Owner
-          Value: Sean-Turner
-
-  CodeBuildRole:
-    Type: "AWS::IAM::Role"
-    Properties:
-      RoleName: !Join
-        - ""
-        - - "code-build-role-"
-          - !Ref Environment
-      AssumeRolePolicyDocument:
-        Version: "2012-10-17"
-        Statement:
-          Effect: "Allow"
-          Principal:
-            Service: "codebuild.amazonaws.com"
-          Action: "sts:AssumeRole"
-      Tags:
-        - Key: Owner
-          Value: Sean-Turner
-
-  CodeBuildPolicy:
-    Type: "AWS::IAM::Policy"
-    Properties:
-      PolicyName: !Join
-        - ""
-        - - "code-build-policy-"
-          - !Ref Environment
-      PolicyDocument:
-        Version: "2012-10-17"
-        Statement:
-          Effect: Allow
-          Action:
-            - apigateway:GET
-            - apigateway:POST
-            - apigateway:PUT
-            - apigateway:DELETE
-            - codebuild:*
-            - cloudformation:List*
-            - cloudformation:Get*
-            - cloudformation:PreviewStackUpdate
-            - cloudformation:ValidateTemplate
-            - cloudformation:CreateStack
-            - cloudformation:CreateUploadBucket
-            - cloudformation:DeleteStack
-            - cloudformation:Describe*
-            - cloudformation:UpdateStack
-            - cloudwatch:GetMetricStatistics
-            - dynamodb:*
-            - ec2:*
-            - ecr:*
-            - events:Put*
-            - events:Remove*
-            - events:Delete*
-            - lambda:Get*
-            - iam:CreateRole
-            - iam:GetRole
-            - iam:DeleteRolePolicy
-            - iam:DeleteRole
-            - iam:PassRole
-            - iam:PutRolePolicy
-            - kinesis:*
-            - lambda:List*
-            - lambda:CreateFunction
-            - lambda:AddPermission
-            - lambda:CreateAlias
-            - lambda:DeleteFunction
-            - lambda:InvokeFunction
-            - lambda:PublishVersion
-            - lambda:RemovePermission
-            - lambda:Update*
-            - logs:CreateLogGroup
-            - logs:CreateLogStream
-            - logs:DeleteLogGroup
-            - logs:DescribeLogGroups
-            - logs:DescribeLogStreams
-            - logs:FilterLogEvents
-            - logs:PutLogEvents
-            - s3:CreateBucket
-            - s3:DeleteBucket
-            - s3:DeleteObject
-            - s3:GetObject
-            - s3:ListBucket
-            - s3:ListBucketVersions
-            - s3:PutObject
-            - ssm:GetParameters
-          Resource: "*"
-      Roles:
-        - !Ref CodeBuildRole
-
-  BuildPushJob:
-    DependsOn:
-      - CodeBuildPolicy
-      - CodeBuildRole
-      - PrivateRouteTableAssociation1
-      - PrivateRouteTableAssociation2
-      - PrivateRouteTableAssociation3
-      - Vpc
-    Type: "AWS::CodeBuild::Project"
-    Properties:
-      Name: build-push-job
-      Description: build and push docker containers to ecr
-      ServiceRole: !Ref CodeBuildRole
-      VpcConfig:
-        VpcId: !Ref Vpc
-        SecurityGroupIds:
-          - !Ref CodeBuildSecurityGroup
-        Subnets:
-          - !Ref PrivateSubnet1
-          - !Ref PrivateSubnet2
-          - !Ref PrivateSubnet3
-      TimeoutInMinutes: 5
-      Source:
-        Type: CODEPIPELINE
-        BuildSpec: !Join
-          - ""
-          - - "cloudformation/buildspecs/buildspec-"
-            - !Ref Environment
-            - ".yaml"
-      Environment:
-        Type: "LINUX_CONTAINER"
-        ComputeType: BUILD_GENERAL1_SMALL
-        EnvironmentVariables:
-          - Name: ENVIRONMENT
-            Type: PLAINTEXT
-            Value: !Ref Environment
-        Image: seanturner026/custom-ci-images:codebuild
-        PrivilegedMode: true
-      Cache:
-        Type: S3
-        Location: !Join
-          - ""
-          - - !Ref CodeBuildBucketName
-            - "/cache"
-        Modes:
-          - LOCAL_DOCKER_LAYER_CACHE
-      LogsConfig:
-        S3Logs:
-          EncryptionDisabled: true
-          Location: !Join
-            - ""
-            - - !Ref CodeBuildBucketName
-              - "/logs"
-          Status: ENABLED
-      Artifacts:
-        Type: CODEPIPELINE
-      Tags:
-        - Key: Owner
-          Value: Sean-Turner
-
 Outputs:
   CodePipelineBucketName:
     Description: S3 bucket name for code pipeline
     Value: !Ref CodePiplineBucket
+    Export:
+      Name: !Sub "${AWS::StackName}"-code-pipeline-bucket-name
 
   CodeBuildBucketName:
     Description: S3 bucket name for code build
     Value: !Ref CodeBuildBucket
+    Export:
+      Name: !Sub "${AWS::StackName}"-code-build-bucket-name
 
   VpcId:
     Description: vpc id
     Value: !Ref Vpc
+    Export:
+      Name: !Sub "${AWS::StackName}"-vpc-id
 
   VpcCidr:
     Description: vpc cidr block
@@ -408,27 +239,23 @@ Outputs:
   PublicSubnetId:
     Description: public subnet id
     Value: !Ref PublicSubnet
+    Export:
+      Name: !Sub "${AWS::StackName}"-code-build-bucket-name
 
   PrivateSubnetId1:
     Description: private subnet 1 id
     Value: !Ref PrivateSubnet1
+    Export:
+      Name: !Sub "${AWS::StackName}"-code-build-bucket-name
 
   PrivateSubnetId2:
     Description: private subnet 2 id
     Value: !Ref PrivateSubnet2
+    Export:
+      Name: !Sub "${AWS::StackName}"-code-build-bucket-name
 
   PrivateSubnetId3:
     Description: private subnet 3 id
     Value: !Ref PrivateSubnet3
-
-  CodeBuildSecurityGroupId:
-    Description: security group for codebuild
-    Value: !Ref CodeBuildSecurityGroup
-
-  BuildPushJob:
-    Description: codebuild job for building and pushing docker images
-    Value: !Ref BuildPushJob
-
-  CodeBuildRole:
-    Description: iam role for code build
-    Value: !Ref CodeBuildRole
+    Export:
+      Name: !Sub "${AWS::StackName}"-code-build-bucket-name

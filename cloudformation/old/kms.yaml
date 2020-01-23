@@ -17,10 +17,10 @@ Resources:
           Action:
             - "kms:*"
           Resource: "*"
-        - Sid: "Allow use of the key by IAM user sean-turner"
+        - Sid: "Allow use of the key by IAM user Sean Turner"
           Effect: "Allow"
           Principal:
-            AWS: !Sub "arn:aws:iam::${AWS::AccountId}:sean-turner"
+            AWS: !Sub "arn:aws:iam::${AWS::AccountId}:Sean Turner"
           Action:
             - "kms:*"
           Resource: "*"
