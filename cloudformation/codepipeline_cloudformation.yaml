@@ -59,7 +59,9 @@ Resources:
         Statement:
           Effect: "Allow"
           Principal:
-            Service: "codepipeline.amazonaws.com"
+            Service:
+              - codepipeline.amazonaws.com
+              - cloudformation.amazonaws.com
           Action: "sts:AssumeRole"
       Tags:
         - Key: Owner
@@ -79,6 +81,7 @@ Resources:
           Action:
             - cloudformation:*
             - codebuild:*
+            - iam:PassRole
             - logs:CreateLogGroup
             - logs:CreateLogStream
             - logs:PutLogEvents
@@ -104,12 +107,7 @@ Resources:
         Location: !Ref CodePipelineCloudformationBucketName
         Type: S3
       RestartExecutionOnUpdate: true
-      RoleArn: !Join
-        - ""
-        - - "arn:aws:iam::"
-          - !Ref AWS::AccountId
-          - ":role/"
-          - !Ref CodePipelineRole
+      RoleArn: !GetAtt CodePipelineRole.Arn
       Stages:
         - Name: checkout-source-code
           Actions:
@@ -138,7 +136,7 @@ Resources:
               Configuration:
                 ActionMode: REPLACE_ON_FAILURE
                 Capabilities: CAPABILITY_NAMED_IAM
-                RoleArn: !Ref CodePipelineRole
+                RoleArn: !GetAtt CodePipelineRole.Arn
                 StackName: code-pipeline-cloudformation
                 TemplatePath: "SourceArtifact::cloudformation/base_resources.yaml"
               InputArtifacts:
