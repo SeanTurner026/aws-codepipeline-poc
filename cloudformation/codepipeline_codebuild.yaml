@@ -1,0 +1,320 @@
+AWSTemplateFormatVersion: 2010-09-09
+
+Description: codepipeline for aws codepipeline poc
+
+Parameters:
+
+  BaseStackName:
+    Type: String
+    Description: stack name containing all base resources
+    Default: sean-codepipeline-cloudformation-base
+
+  Environment:
+    Type: String
+    Description: environment
+    AllowedValues:
+      - dev
+      - prod
+
+  GithubRepository:
+    Type: String
+    Description: github repository
+    Default: aws-codepipeline-nested-cloudformation
+
+  GithubBranch:
+    Type: String
+    Description: github branch
+    Default: two-pipelines
+
+  GithubOwner:
+    Type: String
+    Description: github owner
+    Default: SeanTurner026
+
+  GithubToken:
+    Type: String
+    Description: github token for codepipeline
+    NoEcho: true
+
+Resources:
+
+  CodePipelineRole:
+    Type: "AWS::IAM::Role"
+    Properties:
+      RoleName: sean-codepipeline-role
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          Effect: "Allow"
+          Principal:
+            Service:
+              - codepipeline.amazonaws.com
+          Action: "sts:AssumeRole"
+      Tags:
+        - Key: Owner
+          Value: Sean Turner
+
+  CodePipelinePolicy:
+    Type: "AWS::IAM::Policy"
+    Properties:
+      PolicyName: sean-codepipeline-policy
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          Effect: Allow
+          Action:
+            - cloudformation:*
+            - codebuild:*
+            - ec2:*
+            - iam:*
+            - iam:GetRole
+            - iam:PassRole
+            - logs:CreateLogGroup
+            - logs:CreateLogStream
+            - logs:PutLogEvents
+            - s3:*
+          Resource:
+            - "*"
+      Roles:
+        - !Ref CodePipelineRole
+
+  CodeBuildSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: security group for code build
+      GroupName: codebuild-security-group
+      VpcId: !Ref Vpc
+      SecurityGroupIngress:
+        - CidrIp: 0.0.0.0/0
+          FromPort: 22
+          IpProtocol: tcp
+          ToPort: 22
+      SecurityGroupEgress:
+        - CidrIp: 0.0.0.0/0
+          IpProtocol: -1
+      Tags:
+        - Key: Name
+          Value: codebuild-security-group
+        - Key: Owner
+          Value: Sean Turner
+
+  CodeBuildRole:
+    Type: "AWS::IAM::Role"
+    Properties:
+      RoleName: sean-codebuild-role
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          Effect: "Allow"
+          Principal:
+            Service: "codebuild.amazonaws.com"
+          Action: "sts:AssumeRole"
+      Tags:
+        - Key: Owner
+          Value: Sean Turner
+
+  CodeBuildPolicy:
+    Type: "AWS::IAM::Policy"
+    Properties:
+      PolicyName: sean-codebuild-policy
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          Effect: Allow
+          Action:
+            - apigateway:GET
+            - apigateway:POST
+            - apigateway:PUT
+            - apigateway:DELETE
+            - codebuild:*
+            - cloudformation:List*
+            - cloudformation:Get*
+            - cloudformation:PreviewStackUpdate
+            - cloudformation:ValidateTemplate
+            - cloudformation:CreateStack
+            - cloudformation:CreateUploadBucket
+            - cloudformation:DeleteStack
+            - cloudformation:Describe*
+            - cloudformation:UpdateStack
+            - cloudwatch:GetMetricStatistics
+            - dynamodb:*
+            - ec2:*
+            - ecr:*
+            - events:Put*
+            - events:Remove*
+            - events:Delete*
+            - lambda:Get*
+            - iam:CreateRole
+            - iam:GetRole
+            - iam:DeleteRolePolicy
+            - iam:DeleteRole
+            - iam:PassRole
+            - iam:PutRolePolicy
+            - kinesis:*
+            - lambda:List*
+            - lambda:CreateFunction
+            - lambda:AddPermission
+            - lambda:CreateAlias
+            - lambda:DeleteFunction
+            - lambda:InvokeFunction
+            - lambda:PublishVersion
+            - lambda:RemovePermission
+            - lambda:Update*
+            - logs:CreateLogGroup
+            - logs:CreateLogStream
+            - logs:DeleteLogGroup
+            - logs:DescribeLogGroups
+            - logs:DescribeLogStreams
+            - logs:FilterLogEvents
+            - logs:PutLogEvents
+            - s3:CreateBucket
+            - s3:DeleteBucket
+            - s3:DeleteObject
+            - s3:GetObject
+            - s3:ListBucket
+            - s3:ListBucketVersions
+            - s3:PutObject
+            - ssm:GetParameters
+          Resource: "*"
+      Roles:
+        - !Ref CodeBuildRole
+
+  EcrPolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: sean-ecr-policy
+      PolicyDocument:
+        Version: "2008-10-17"
+        Statement:
+        - Sid: ECR Repository Policy
+          Effect: Allow
+          Action:
+          - ecr:*
+          Resource: "*"
+
+  EcrRepository:
+    Type: AWS::ECR::Repository
+    Properties:
+      RepositoryName: sean_codepipeline_poc
+      RepositoryPolicyText: !Ref EcrPolicy
+      Tags:
+        - Key: Owner
+          Value: Sean Turner
+
+  BuildPushJob:
+    DependsOn:
+      - CodeBuildPolicy
+      - CodeBuildRole
+      - EcrRepository
+    Type: "AWS::CodeBuild::Project"
+    Properties:
+      Name: build_push_job
+      Description: build and push docker containers to ecr
+      ServiceRole: !Ref CodeBuildRole
+      VpcConfig:
+        VpcId: !Ref Vpc
+        SecurityGroupIds:
+          - !Ref CodeBuildSecurityGroup
+        Subnets:
+          - Fn::ImportValue:
+              !Sub "${BaseStackName}-private-1-subnet-id"
+          - Fn::ImportValue:
+              !Sub "${BaseStackName}-private-2-subnet-id"
+          - Fn::ImportValue:
+              !Sub "${BaseStackName}-private-3-subnet-id"
+      TimeoutInMinutes: 5
+      Source:
+        Type: CODEPIPELINE
+        BuildSpec: !Join
+          - ""
+          - - "cloudformation/buildspecs/buildspec-"
+            - !Ref Environment
+            - ".yaml"
+      Environment:
+        Type: "LINUX_CONTAINER"
+        ComputeType: BUILD_GENERAL1_SMALL
+        EnvironmentVariables:
+          - Name: ENVIRONMENT
+            Type: PLAINTEXT
+            Value: !Ref Environment
+        Image: seanturner026/custom-ci-images:codebuild
+        PrivilegedMode: true
+      Cache:
+        Type: S3
+        Location:
+          Fn::ImportValue:
+            !Sub "${BaseStackName}-code-build-bucket-name/cache"
+        Modes:
+          - LOCAL_DOCKER_LAYER_CACHE
+      LogsConfig:
+        S3Logs:
+          EncryptionDisabled: true
+          Location:
+            Fn::ImportValue:
+              !Sub "${BaseStackName}-code-build-bucket-name/logs"
+          Status: ENABLED
+      Artifacts:
+        Type: CODEPIPELINE
+      Tags:
+        - Key: Owner
+          Value: Sean Turner
+
+  Pipeline:
+    Type: "AWS::CodePipeline::Pipeline"
+    Properties:
+      Name: sean-code-pipeline-docker
+      ArtifactStore:
+        Location:
+          Fn::ImportValue:
+            !Sub  "${CodePipelineBucketName}-code-pipeline-bucket-name"
+        Type: S3
+      RestartExecutionOnUpdate: true
+      RoleArn: !GetAtt CodePipelineRole
+      Stages:
+        - Name: checkout_source_code
+          Actions:
+            - Name: SourceAction
+              RunOrder: 1
+              ActionTypeId:
+                Category: Source
+                Owner: ThirdParty
+                Provider: GitHub
+                Version: 1
+              Configuration:
+                Owner: !Ref GithubOwner
+                Repo: !Ref GithubRepository
+                Branch: !Ref GithubBranch
+                PollForSourceChanges: true
+                OAuthToken: !Ref GithubToken
+              OutputArtifacts:
+                - Name: source_code
+
+        - Name: docker_build_push
+          Actions:
+            - Name: build_push_job
+              RunOrder: 1
+              InputArtifacts:
+                - Name: source_code
+              ActionTypeId:
+                Category: Build
+                Owner: AWS
+                Provider: CodeBuild
+                Version: 1
+              Configuration:
+                ProjectName: !Ref BuildPushJob
+              OutputArtifacts:
+                - Name: build_push_job
+
+Outputs:
+
+  CodeBuildSecurityGroupId:
+    Description: security group for codebuild
+    Value: !Ref CodeBuildSecurityGroup
+
+  BuildPushJob:
+    Description: codebuild job for building and pushing docker images
+    Value: !Ref BuildPushJob
+
+  CodeBuildRole:
+    Description: iam role for code build
+    Value: !Ref CodeBuildRole
