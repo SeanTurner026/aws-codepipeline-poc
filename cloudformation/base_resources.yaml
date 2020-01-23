@@ -3,6 +3,12 @@ AWSTemplateFormatVersion: 2010-09-09
 Description: base stack deployed by code pipeline
 
 Parameters:
+
+  CidrBlock:
+    Type: String
+    Description: cidr block for vpc
+    Default: 10.0.0.0/18
+
   CodeBuildBucketName:
     Description: name of bucket for code build logging
     Type: String
