@@ -1,5 +1,5 @@
+.vscode/
 venv/
 __pycache__/
 
-cfn-package.yaml
 cloudformation/.env*

@@ -1,99 +1,122 @@
 AWSTemplateFormatVersion: 2010-09-09
 
-Description: vpc for aws proof-of-concept
+Description: base stack deployed by code pipeline
 
 Parameters:
-  CidrBlock:
-    Type: String
-    Description: cidr block for vpc
 
-  PrivateSubnet1AZ:
+  CodeBuildBucketName:
+    Description: name of bucket for code build logging
     Type: String
-    Description: availability zone for private subnet 1
+    Default: sean-codebuild-bucket
 
-  PrivateSubnet1Cidr:
+  CodePipelineBucketName:
+    Description: name of bucket for code pipeline artifacts
     Type: String
-    Description: cidr block for private subnet 1
-
-  PrivateSubnet2AZ:
-    Type: String
-    Description: availability zone for private subnet 2
-
-  PrivateSubnet2Cidr:
-    Type: String
-    Description: cidr block for private subnet 2
-
-  PrivateSubnet3AZ:
-    Type: String
-    Description: availability zone for private subnet 3
-
-  PrivateSubnet3Cidr:
-    Type: String
-    Description: cidr block for private subnet 3
-
-  PublicSubnetAZ:
-    Type: String
-    Description: availability zone for public subnet 1
-
-  PublicSubnetCidr:
-    Type: String
-    Description: cidr block for public subnet 1
+    Default: sean-codepipeline-bucket
 
   VpcName:
-    Type: String
     Description: name of the vpc
+    Type: String
+    Default: sandbox
+
+Mappings:
+  SubnetConfig:
+    GlobalCidr:
+      cidr: 10.0.0.0/18
+    PublicCidr1:
+      cidr: 10.0.0.0/20
+    PrivateCidr1:
+      cidr: 10.0.16.0/20
+    PrivateCidr2:
+      cidr: 10.0.32.0/20
+    PrivateCidr3:
+      cidr: 10.0.48.0/20
+
+  AvailabilityZones:
+    az1:
+      az: ap-southeast-2a
+    az2:
+      az: ap-southeast-2b
+    az3:
+      az: ap-southeast-2c
 
 Resources:
+  CodePiplineBucket:
+    Type: "AWS::S3::Bucket"
+    Properties:
+      BucketName: !Ref CodePipelineBucketName
+      Tags:
+        - Key: Owner
+          Value: Sean Turner
+
+  CodeBuildBucket:
+    Type: "AWS::S3::Bucket"
+    Properties:
+      BucketName: !Ref CodeBuildBucketName
+      Tags:
+        - Key: Owner
+          Value: Sean Turner
+
   Vpc:
     Type: AWS::EC2::VPC
     Properties:
-      CidrBlock: !Ref CidrBlock
+      CidrBlock: !FindInMap [SubnetConfig, GlobalCidr, cidr]
       EnableDnsHostnames: true
       EnableDnsSupport: true
       InstanceTenancy: default
       Tags:
         - Key: Name
           Value: !Ref VpcName
+        - Key: Owner
+          Value: Sean Turner
 
   PublicSubnet:
     Type: AWS::EC2::Subnet
     Properties:
-      AvailabilityZone: !Ref PublicSubnetAZ
-      CidrBlock: !Ref PublicSubnetCidr
+      AvailabilityZone: !FindInMap [AvailabilityZones, az1, az]
+      CidrBlock: !FindInMap [SubnetConfig, PublicCidr1, cidr]
       VpcId: !Ref Vpc
       Tags:
         - Key: Name
           Value: !Sub "${AWS::StackName}-public-subnet-1"
+        - Key: Owner
+          Value: Sean Turner
 
   PrivateSubnet1:
     Type: AWS::EC2::Subnet
     Properties:
-      AvailabilityZone: !Ref PrivateSubnet1AZ
-      CidrBlock: !Ref PrivateSubnet1Cidr
+      AvailabilityZone: !FindInMap [AvailabilityZones, az1, az]
+      CidrBlock: !FindInMap [SubnetConfig, PrivateCidr1, cidr]
       VpcId: !Ref Vpc
       Tags:
         - Key: Name
           Value: !Sub "${AWS::StackName}-private-subnet-1"
+        - Key: Owner
+          Value: Sean Turner
 
   PrivateSubnet2:
     Type: AWS::EC2::Subnet
     Properties:
-      AvailabilityZone: !Ref PrivateSubnet2AZ
-      CidrBlock: !Ref PrivateSubnet2Cidr
+      AvailabilityZone: !FindInMap [AvailabilityZones, az2, az]
+      CidrBlock: !FindInMap [SubnetConfig, PrivateCidr2, cidr]
       VpcId: !Ref Vpc
       Tags:
         - Key: Name
           Value: !Sub "${AWS::StackName}-private-subnet-2"
+        - Key: Owner
+          Value: Sean Turner
 
   PrivateSubnet3:
     Type: AWS::EC2::Subnet
     Properties:
-      AvailabilityZone: !Ref PrivateSubnet3AZ
-      CidrBlock: !Ref PrivateSubnet3Cidr
+      AvailabilityZone: !FindInMap [AvailabilityZones, az3, az]
+      CidrBlock: !FindInMap [SubnetConfig, PrivateCidr3, cidr]
       VpcId: !Ref Vpc
       Tags:
         - Key: Name
           Value: !Sub "${AWS::StackName}-private-subnet-3"
+        - Key: Owner
+          Value: Sean Turner
 
   InternetGateway:
     Type: AWS::EC2::InternetGateway
@@ -101,6 +124,8 @@ Resources:
       Tags:
         - Key: Name
           Value: !Sub "${AWS::StackName}-igw"
+        - Key: Owner
+          Value: Sean Turner
 
   VPCGatewayAttachment:
     Type: AWS::EC2::VPCGatewayAttachment
@@ -115,6 +140,8 @@ Resources:
       Tags:
         - Key: Name
           Value: !Sub "${AWS::StackName}-public-rt"
+        - Key: Owner
+          Value: Sean Turner
 
   PublicRoute:
     Type: AWS::EC2::Route
@@ -148,6 +175,8 @@ Resources:
       Tags:
         - Key: Name
           Value: !Sub "${AWS::StackName}-nat-gw"
+        - Key: Owner
+          Value: Sean Turner
 
   NatRouteTable:
     Type: AWS::EC2::RouteTable
@@ -156,6 +185,8 @@ Resources:
       Tags:
         - Key: Name
           Value: !Sub "${AWS::StackName}-nat-rt"
+        - Key: Owner
+          Value: Sean Turner
 
   NatRoute:
     Type: AWS::EC2::Route
@@ -182,53 +213,49 @@ Resources:
       RouteTableId: !Ref NatRouteTable
       SubnetId: !Ref PrivateSubnet3
 
-  CodeBuildSecurityGroup:
-    Type: AWS::EC2::SecurityGroup
-    Properties:
-      GroupDescription: security group for code build
-      GroupName: code-build-security-group
-      VpcId: !Ref Vpc
-      SecurityGroupIngress:
-        - CidrIp: 0.0.0.0/0
-          FromPort: 22
-          IpProtocol: tcp
-          ToPort: 22
-      SecurityGroupEgress:
-        - CidrIp: 0.0.0.0/0
-          IpProtocol: -1
-      Tags:
-        - Key: Name
-          Value: code-build-security-group
-
 Outputs:
-  Name:
-    Description: vpc stack name
-    Value: !Ref AWS::StackName
+  CodePipelineBucketName:
+    Description: S3 bucket name for code pipeline
+    Value: !Ref CodePiplineBucket
+    Export:
+      Name: !Sub "${AWS::StackName}-code-pipeline-bucket-name"
+
+  CodeBuildBucketName:
+    Description: S3 bucket name for code build
+    Value: !Ref CodeBuildBucket
+    Export:
+      Name: !Sub "${AWS::StackName}-code-build-bucket-name"
 
   VpcId:
     Description: vpc id
     Value: !Ref Vpc
+    Export:
+      Name: !Sub "${AWS::StackName}-vpc-id"
 
   VpcCidr:
     Description: vpc cidr block
-    Value: !Ref CidrBlock
+    Value: !GetAtt Vpc.CidrBlock
 
   PublicSubnetId:
     Description: public subnet id
     Value: !Ref PublicSubnet
+    Export:
+      Name: !Sub "${AWS::StackName}-public-subnet-id"
 
   PrivateSubnetId1:
     Description: private subnet 1 id
     Value: !Ref PrivateSubnet1
+    Export:
+      Name: !Sub "${AWS::StackName}-private-1-subnet-id"
 
   PrivateSubnetId2:
     Description: private subnet 2 id
     Value: !Ref PrivateSubnet2
+    Export:
+      Name: !Sub "${AWS::StackName}-private-2-subnet-id"
 
   PrivateSubnetId3:
     Description: private subnet 3 id
     Value: !Ref PrivateSubnet3
-
-  CodeBuildSecurityGroupId:
-    Description: security group for codebuild
-    Value: !Ref CodeBuildSecurityGroup
+    Export:
+      Name: !Sub "${AWS::StackName}-private-3-subnet-id"

@@ -1,13 +1,16 @@
 #!/bin/bash
 
-echo $DOCKER_PASSWORD | docker login --username $DOCKER_USERNAME --password-stdin
+export AWS_ACCOUNT_ID=$CODEBUILD_WEBHOOK_ACTOR_ACCOUNT_ID
+export GIT_SHA=$CODEBUILD_RESOLVED_SOURCE_VERSION
+
+$(aws ecr get-login --no-include-email --region $AWS_DEFAULT_REGION)
 
 docker build . \
-    -t $DOCKER_USERNAME/aws-codepipeline-poc:$CODEBUILD_RESOLVED_SOURCE_VERSION \
+    -t $REPOSITORY_URI:$GIT_SHA \
     -f $CODEBUILD_SRC_DIR/docker/Dockerfile
 
-docker tag $DOCKER_USERNAME/aws-codepipeline-poc:$CODEBUILD_RESOLVED_SOURCE_VERSION \
-           $DOCKER_USERNAME/aws-codepipeline-poc:latest
+docker tag $REPOSITORY_URI:$GIT_SHA \
+           $REPOSITORY_URI:latest
 
-docker push $DOCKER_USERNAME/aws-codepipeline-poc:$CODEBUILD_RESOLVED_SOURCE_VERSION
-docker push $DOCKER_USERNAME/aws-codepipeline-poc:latest
+docker push $REPOSITORY_URI:$GIT_SHA
+docker push $REPOSITORY_URI:latest
