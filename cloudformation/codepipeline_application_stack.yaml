@@ -1,6 +1,6 @@
 AWSTemplateFormatVersion: 2010-09-09
 
-Description: codepipeline for aws codepipeline poc
+Description: codepipeline plus all resources necessary to build to build docker containers
 
 Parameters:
 
@@ -116,20 +116,6 @@ Resources:
         - Key: Owner
           Value: Sean Turner
 
-  # EcrPolicy:
-  #   Type: AWS::IAM::Policy
-  #   Properties:
-  #     PolicyName: sean-ecr-policy
-  #     PolicyDocument:
-  #       Version: "2008-10-17"
-  #       Statement:
-  #       - Effect: Allow
-  #         Action:
-  #         - ecr:*
-  #         Resource: "*"
-  #     Roles:
-  #       - !Ref CodeBuildRole
-
   CodeBuildPolicy:
     Type: "AWS::IAM::Policy"
     Properties:
@@ -195,13 +181,11 @@ Resources:
           Resource: "*"
       Roles:
         - !Ref CodeBuildRole
-        # - !Ref EcrPolicy
 
   EcrRepository:
     Type: AWS::ECR::Repository
     Properties:
       RepositoryName: sean_codepipeline_poc
-      # RepositoryPolicyText: !Ref EcrPolicy
       Tags:
         - Key: Owner
           Value: Sean Turner
