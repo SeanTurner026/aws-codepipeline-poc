@@ -1,6 +1,6 @@
 # AWS Code Pipeline Cloudformation
 
-The cloudformation templates in this repository will create a code pipeline pipeline which deploys base resources that can be consumed by applications.
+The cloudformation templates in this repository will create a code pipeline which uses cloudformation to deploy base resources that can be consumed by applications.
 
 The following resources are created:
 - vpc (1 public, 3 private subnets)
