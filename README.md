@@ -16,7 +16,7 @@ Once the cloudformation codepipeline exits successfully, any commit will trigger
 ## Requirements
 
 - AWS account -- **NOTE: Running this pipeline will cost money.**
-- Replace the default values in the following parameters in `cfn-main.yaml`:
+- Replace the default values in the following parameters in `cloudformation/codepipeline_initiator.yaml`:
     - `CodeBuildBucketName`
     - `CodePipelineBucketName`
     - `GithubBranch`
