@@ -133,7 +133,7 @@ Resources:
                 Capabilities: CAPABILITY_NAMED_IAM
                 RoleArn: !GetAtt CodePipelineCloudformationRole.Arn
                 StackName: !Ref CloudformationBaseStackName
-                TemplatePath: "source_code::cloudformation/base_resources.yaml"
+                TemplatePath: "source_code::cloudformation/initiator_resources.yaml"
               InputArtifacts:
                 - Name: source_code
       Tags:
