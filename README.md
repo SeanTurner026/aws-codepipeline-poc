@@ -1,6 +1,6 @@
 # AWS Code Pipeline Cloudformation
 
-The cloudformation templates in this repository will create a code pipeline which uses cloudformation to deploy base resources that can be consumed by applications.
+The cloudformation templates in this repository will create a code pipeline which deploys cloudformation. The following resources will be produced.
 
 The following resources are created:
 - vpc (1 public, 3 private subnets)
@@ -31,7 +31,11 @@ GithubToken=your_token
 
 ## Deploy Command
 ```
-aws cloudformation deploy --template-file cloudformation/codepipeline_initiator.yaml --stack-name sean-codepipeline-initiator --parameter-overrides $(cat cloudformation/.env.dev) --capabilities CAPABILITY_NAMED_IAM
+aws cloudformation deploy \
+    --template-file cloudformation/codepipeline_initiator.yaml \
+    --stack-name sean-codepipeline-initiator \
+    --parameter-overrides $(cat cloudformation/.env.dev) \
+    --capabilities CAPABILITY_NAMED_IAM
 ```
 
 ## Nested Stacks
