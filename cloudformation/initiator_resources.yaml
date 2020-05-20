@@ -3,15 +3,15 @@ AWSTemplateFormatVersion: 2010-09-09
 Description: base stack deployed by code pipeline
 
 Parameters:
-  CodeBuildBucketName:
-    Description: name of bucket for code build logging
-    Type: String
-    Default: nzqa-pp2-codebuild-bucket
+  # CodeBuildBucketName:
+  #   Description: name of bucket for code build logging
+  #   Type: String
+  #   Default: nzqa-pp2-codebuild-bucket
 
-  CodePipelineBucketName:
-    Description: name of bucket for code pipeline artifacts
-    Type: String
-    Default: nzqa-pp2-codepipeline-bucket
+  # CodePipelineBucketName:
+  #   Description: name of bucket for code pipeline artifacts
+  #   Type: String
+  #   Default: nzqa-pp2-codepipeline-bucket
 
   VpcName:
     Description: name of the vpc
@@ -22,13 +22,13 @@ Mappings:
   SubnetConfig:
     GlobalCidr:
       cidr: 10.1.0.0/18
-    PublicCidr1:
+    PublicCidrA:
       cidr: 10.1.0.0/20
-    PrivateCidr1:
+    PrivateCidrA:
       cidr: 10.1.16.0/20
-    PrivateCidr2:
+    PrivateCidrB:
       cidr: 10.1.32.0/20
-    PrivateCidr3:
+    PrivateCidrC:
       cidr: 10.1.48.0/20
 
   AvailabilityZones:
@@ -40,29 +40,29 @@ Mappings:
       az: ap-southeast-2c
 
 Resources:
-  CodePiplineBucket:
-    Type: "AWS::S3::Bucket"
-    Properties:
-      BucketName: !Ref CodePipelineBucketName
-      Tags:
-        - Key: OwnerTeam
-          Value: Consegna
-        - Key: OwnerTeamEmail
-          Value: aws.nzqa@consegna.cloud
-        - Key: ManagedBy
-          Value: Cloudformation
+  # CodePiplineBucket:
+  #   Type: "AWS::S3::Bucket"
+  #   Properties:
+  #     BucketName: !Ref CodePipelineBucketName
+  #     Tags:
+  #       - Key: OwnerTeam
+  #         Value: Consegna
+  #       - Key: OwnerTeamEmail
+  #         Value: aws.nzqa@consegna.cloud
+  #       - Key: ManagedBy
+  #         Value: Cloudformation
 
-  CodeBuildBucket:
-    Type: "AWS::S3::Bucket"
-    Properties:
-      BucketName: !Ref CodeBuildBucketName
-      Tags:
-        - Key: OwnerTeam
-          Value: Consegna
-        - Key: OwnerTeamEmail
-          Value: aws.nzqa@consegna.cloud
-        - Key: ManagedBy
-          Value: Cloudformation
+  # CodeBuildBucket:
+  #   Type: "AWS::S3::Bucket"
+  #   Properties:
+  #     BucketName: !Ref CodeBuildBucketName
+  #     Tags:
+  #       - Key: OwnerTeam
+  #         Value: Consegna
+  #       - Key: OwnerTeamEmail
+  #         Value: aws.nzqa@consegna.cloud
+  #       - Key: ManagedBy
+  #         Value: Cloudformation
 
   Vpc:
     Type: AWS::EC2::VPC
@@ -85,7 +85,7 @@ Resources:
     Type: AWS::EC2::Subnet
     Properties:
       AvailabilityZone: !FindInMap [AvailabilityZones, az1, az]
-      CidrBlock: !FindInMap [SubnetConfig, PublicCidr1, cidr]
+      CidrBlock: !FindInMap [SubnetConfig, PublicCidrA, cidr]
       VpcId: !Ref Vpc
       Tags:
         - Key: Name
@@ -101,7 +101,7 @@ Resources:
     Type: AWS::EC2::Subnet
     Properties:
       AvailabilityZone: !FindInMap [AvailabilityZones, az1, az]
-      CidrBlock: !FindInMap [SubnetConfig, PrivateCidr1, cidr]
+      CidrBlock: !FindInMap [SubnetConfig, PrivateCidrA, cidr]
       VpcId: !Ref Vpc
       Tags:
         - Key: Name
@@ -117,7 +117,7 @@ Resources:
     Type: AWS::EC2::Subnet
     Properties:
       AvailabilityZone: !FindInMap [AvailabilityZones, az2, az]
-      CidrBlock: !FindInMap [SubnetConfig, PrivateCidr2, cidr]
+      CidrBlock: !FindInMap [SubnetConfig, PrivateCidrB, cidr]
       VpcId: !Ref Vpc
       Tags:
         - Key: Name
@@ -133,7 +133,7 @@ Resources:
     Type: AWS::EC2::Subnet
     Properties:
       AvailabilityZone: !FindInMap [AvailabilityZones, az3, az]
-      CidrBlock: !FindInMap [SubnetConfig, PrivateCidr3, cidr]
+      CidrBlock: !FindInMap [SubnetConfig, PrivateCidrC, cidr]
       VpcId: !Ref Vpc
       Tags:
         - Key: Name
