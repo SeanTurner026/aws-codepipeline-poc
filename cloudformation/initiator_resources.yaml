@@ -6,7 +6,7 @@ Parameters:
   VpcName:
     Description: name of the vpc
     Type: String
-    Default: codebuild-primary
+    Default: private-www
 
 Mappings:
   SubnetConfig:

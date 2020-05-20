@@ -21,7 +21,7 @@ Parameters:
   CloudformationBaseStackName:
     Type: String
     Description: name of stack to be deployed by the codepipeline deployed by this template
-    Default: sean-codepipeline-cloudformation-base
+    Default: nzqa-codepipeline-cloudformation-vpc-base
 
   GithubRepository:
     Type: String
