@@ -44,8 +44,6 @@ Resources:
           Value: Consegna
         - Key: OwnerTeamEmail
           Value: aws.nzqa@consegna.cloud
-        - Key: ManagedBy
-          Value: Cloudformation
 
   PublicSubnetA:
     Type: AWS::EC2::Subnet
