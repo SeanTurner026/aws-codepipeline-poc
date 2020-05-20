@@ -173,7 +173,7 @@ Resources:
       VpcId: !Ref Vpc
       Tags:
         - Key: Name
-          Value: !Sub "${AWS::StackName}/nat"
+          Value: !Sub "${VpcName}/private"
         - Key: OwnerTeam
           Value: Consegna
         - Key: OwnerTeamEmail
