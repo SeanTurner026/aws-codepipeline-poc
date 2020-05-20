@@ -279,25 +279,25 @@ Outputs:
     Description: vpc cidr block
     Value: !GetAtt Vpc.CidrBlock
 
-  PublicSubnetId-A:
+  PublicSubnetIdA:
     Description: Public Subnet A id
     Value: !Ref PublicSubnetA
     Export:
       Name: !Sub "${AWS::StackName}-public-subnet-a-id"
 
-  PrivateSubnetId-A:
+  PrivateSubnetIdA:
     Description: Private Subnet A id
     Value: !Ref PrivateSubnetA
     Export:
       Name: !Sub "${AWS::StackName}-private-subnet-a-id"
 
-  PrivateSubnetId-B:
+  PrivateSubnetIdB:
     Description: Private Subnet B id
     Value: !Ref PrivateSubnetB
     Export:
       Name: !Sub "${AWS::StackName}-private-subnet-b-id"
 
-  PrivateSubnetId-C:
+  PrivateSubnetIdC:
     Description: Private Subnet C id
     Value: !Ref PrivateSubnetC
     Export:
