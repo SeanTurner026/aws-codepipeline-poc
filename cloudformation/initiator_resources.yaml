@@ -39,15 +39,6 @@ Mappings:
     az3:
       az: ap-southeast-2c
 
-
-TagAnchor: &consegna_tags
-  - Key: OwnerTeam
-    Value: Consegna
-  - Key: OwnerTeamEmail
-    Value: aws.nzqa@consegna.cloud
-  - Key: ManagedBy
-    Value: Cloudformation
-
 Resources:
   # CodePiplineBucket:
   #   Type: "AWS::S3::Bucket"
@@ -83,7 +74,12 @@ Resources:
       Tags:
         - Key: Name
           Value: !Ref VpcName
-        <<: *consegna_tags
+        - Key: OwnerTeam
+          Value: Consegna
+        - Key: OwnerTeamEmail
+          Value: aws.nzqa@consegna.cloud
+        - Key: ManagedBy
+          Value: Cloudformation
 
   PublicSubnetA:
     Type: AWS::EC2::Subnet
