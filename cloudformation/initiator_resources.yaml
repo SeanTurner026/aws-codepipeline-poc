@@ -3,16 +3,6 @@ AWSTemplateFormatVersion: 2010-09-09
 Description: base stack deployed by code pipeline
 
 Parameters:
-  # CodeBuildBucketName:
-  #   Description: name of bucket for code build logging
-  #   Type: String
-  #   Default: nzqa-pp2-codebuild-bucket
-
-  # CodePipelineBucketName:
-  #   Description: name of bucket for code pipeline artifacts
-  #   Type: String
-  #   Default: nzqa-pp2-codepipeline-bucket
-
   VpcName:
     Description: name of the vpc
     Type: String
@@ -40,30 +30,6 @@ Mappings:
       az: ap-southeast-2c
 
 Resources:
-  # CodePiplineBucket:
-  #   Type: "AWS::S3::Bucket"
-  #   Properties:
-  #     BucketName: !Ref CodePipelineBucketName
-  #     Tags:
-  #       - Key: OwnerTeam
-  #         Value: Consegna
-  #       - Key: OwnerTeamEmail
-  #         Value: aws.nzqa@consegna.cloud
-  #       - Key: ManagedBy
-  #         Value: Cloudformation
-
-  # CodeBuildBucket:
-  #   Type: "AWS::S3::Bucket"
-  #   Properties:
-  #     BucketName: !Ref CodeBuildBucketName
-  #     Tags:
-  #       - Key: OwnerTeam
-  #         Value: Consegna
-  #       - Key: OwnerTeamEmail
-  #         Value: aws.nzqa@consegna.cloud
-  #       - Key: ManagedBy
-  #         Value: Cloudformation
-
   Vpc:
     Type: AWS::EC2::VPC
     Properties:
@@ -94,8 +60,6 @@ Resources:
           Value: Consegna
         - Key: OwnerTeamEmail
           Value: aws.nzqa@consegna.cloud
-        - Key: ManagedBy
-          Value: Cloudformation
 
   PrivateSubnetA:
     Type: AWS::EC2::Subnet
@@ -110,8 +74,6 @@ Resources:
           Value: Consegna
         - Key: OwnerTeamEmail
           Value: aws.nzqa@consegna.cloud
-        - Key: ManagedBy
-          Value: Cloudformation
 
   PrivateSubnetB:
     Type: AWS::EC2::Subnet
@@ -126,8 +88,6 @@ Resources:
           Value: Consegna
         - Key: OwnerTeamEmail
           Value: aws.nzqa@consegna.cloud
-        - Key: ManagedBy
-          Value: Cloudformation
 
   PrivateSubnetC:
     Type: AWS::EC2::Subnet
@@ -142,8 +102,6 @@ Resources:
           Value: Consegna
         - Key: OwnerTeamEmail
           Value: aws.nzqa@consegna.cloud
-        - Key: ManagedBy
-          Value: Cloudformation
 
   InternetGateway:
     Type: AWS::EC2::InternetGateway
@@ -155,8 +113,6 @@ Resources:
           Value: Consegna
         - Key: OwnerTeamEmail
           Value: aws.nzqa@consegna.cloud
-        - Key: ManagedBy
-          Value: Cloudformation
 
   VPCGatewayAttachment:
     Type: AWS::EC2::VPCGatewayAttachment
@@ -175,8 +131,6 @@ Resources:
           Value: Consegna
         - Key: OwnerTeamEmail
           Value: aws.nzqa@consegna.cloud
-        - Key: ManagedBy
-          Value: Cloudformation
 
   PublicRoute:
     Type: AWS::EC2::Route
@@ -214,8 +168,6 @@ Resources:
           Value: Consegna
         - Key: OwnerTeamEmail
           Value: aws.nzqa@consegna.cloud
-        - Key: ManagedBy
-          Value: Cloudformation
 
   NatRouteTable:
     Type: AWS::EC2::RouteTable
@@ -228,8 +180,6 @@ Resources:
           Value: Consegna
         - Key: OwnerTeamEmail
           Value: aws.nzqa@consegna.cloud
-        - Key: ManagedBy
-          Value: Cloudformation
 
   NatRoute:
     Type: AWS::EC2::Route
@@ -257,18 +207,6 @@ Resources:
       SubnetId: !Ref PrivateSubnetC
 
 Outputs:
-  # CodePipelineBucketName:
-  #   Description: S3 bucket name for code pipeline
-  #   Value: !Ref CodePiplineBucket
-  #   Export:
-  #     Name: !Sub "${AWS::StackName}-code-pipeline-bucket-name"
-
-  # CodeBuildBucketName:
-  #   Description: S3 bucket name for code build
-  #   Value: !Ref CodeBuildBucket
-  #   Export:
-  #     Name: !Sub "${AWS::StackName}-code-build-bucket-name"
-
   VpcId:
     Description: vpc id
     Value: !Ref Vpc

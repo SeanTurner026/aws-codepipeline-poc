@@ -147,5 +147,3 @@ Resources:
           Value: Consegna
         - Key: OwnerTeamEmail
           Value: aws.nzqa@consegna.cloud
-        - Key: ManagedBy
-          Value: Cloudformation
