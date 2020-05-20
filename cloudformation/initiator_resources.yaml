@@ -257,17 +257,17 @@ Resources:
       SubnetId: !Ref PrivateSubnetC
 
 Outputs:
-  CodePipelineBucketName:
-    Description: S3 bucket name for code pipeline
-    Value: !Ref CodePiplineBucket
-    Export:
-      Name: !Sub "${AWS::StackName}-code-pipeline-bucket-name"
+  # CodePipelineBucketName:
+  #   Description: S3 bucket name for code pipeline
+  #   Value: !Ref CodePiplineBucket
+  #   Export:
+  #     Name: !Sub "${AWS::StackName}-code-pipeline-bucket-name"
 
-  CodeBuildBucketName:
-    Description: S3 bucket name for code build
-    Value: !Ref CodeBuildBucket
-    Export:
-      Name: !Sub "${AWS::StackName}-code-build-bucket-name"
+  # CodeBuildBucketName:
+  #   Description: S3 bucket name for code build
+  #   Value: !Ref CodeBuildBucket
+  #   Export:
+  #     Name: !Sub "${AWS::StackName}-code-build-bucket-name"
 
   VpcId:
     Description: vpc id
