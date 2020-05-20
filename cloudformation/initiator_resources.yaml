@@ -89,7 +89,7 @@ Resources:
       VpcId: !Ref Vpc
       Tags:
         - Key: Name
-          Value: !Sub "${VpcName}/public/a" # !Join : ["/", [ {"Ref": "VpcName"}, "public", "a"] ]
+          Value: !Sub "${VpcName}/public/a"
         - Key: OwnerTeam
           Value: Consegna
         - Key: OwnerTeamEmail
@@ -105,7 +105,7 @@ Resources:
       VpcId: !Ref Vpc
       Tags:
         - Key: Name
-          Value: !Sub "${VpcName}/public/a"
+          Value: !Sub "${VpcName}/private/a"
         - Key: OwnerTeam
           Value: Consegna
         - Key: OwnerTeamEmail
@@ -279,25 +279,25 @@ Outputs:
     Description: vpc cidr block
     Value: !GetAtt Vpc.CidrBlock
 
-  PublicSubnetId:
+  PublicSubnetId-A:
     Description: Public Subnet A id
     Value: !Ref PublicSubnetA
     Export:
       Name: !Sub "${AWS::StackName}-public-subnet-a-id"
 
-  PrivateSubnetId1:
+  PrivateSubnetId-A:
     Description: Private Subnet A id
     Value: !Ref PrivateSubnetA
     Export:
       Name: !Sub "${AWS::StackName}-private-subnet-a-id"
 
-  PrivateSubnetId2:
+  PrivateSubnetId-B:
     Description: Private Subnet B id
     Value: !Ref PrivateSubnetB
     Export:
       Name: !Sub "${AWS::StackName}-private-subnet-b-id"
 
-  PrivateSubnetId3:
+  PrivateSubnetId-C:
     Description: Private Subnet C id
     Value: !Ref PrivateSubnetC
     Export:

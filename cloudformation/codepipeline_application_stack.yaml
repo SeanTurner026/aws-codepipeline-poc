@@ -203,9 +203,9 @@ Resources:
         SecurityGroupIds:
           - !Ref CodeBuildSecurityGroup
         Subnets:
-          - Fn::ImportValue: !Sub "${BaseStackName}-private-1-subnet-id"
-          - Fn::ImportValue: !Sub "${BaseStackName}-private-2-subnet-id"
-          - Fn::ImportValue: !Sub "${BaseStackName}-private-3-subnet-id"
+          - Fn::ImportValue: !Sub "${BaseStackName}-private-subnet-a-id"
+          - Fn::ImportValue: !Sub "${BaseStackName}-private-subnet-b-id"
+          - Fn::ImportValue: !Sub "${BaseStackName}-private-subnet-c-id"
       TimeoutInMinutes: 5
       Source:
         Type: CODEPIPELINE
