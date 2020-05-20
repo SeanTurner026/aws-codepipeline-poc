@@ -167,7 +167,7 @@ Resources:
         - Key: OwnerTeamEmail
           Value: aws.nzqa@consegna.cloud
 
-  NatRouteTable:
+  PrivateRouteTable:
     Type: AWS::EC2::RouteTable
     Properties:
       VpcId: !Ref Vpc
@@ -182,26 +182,26 @@ Resources:
   NatRoute:
     Type: AWS::EC2::Route
     Properties:
-      RouteTableId: !Ref NatRouteTable
+      RouteTableId: !Ref PrivateRouteTable
       DestinationCidrBlock: 0.0.0.0/0
       NatGatewayId: !Ref NatGateway
 
   PrivateRouteTableAssociation1:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
-      RouteTableId: !Ref NatRouteTable
+      RouteTableId: !Ref PrivateRouteTable
       SubnetId: !Ref PrivateSubnetA
 
   PrivateRouteTableAssociation2:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
-      RouteTableId: !Ref NatRouteTable
+      RouteTableId: !Ref PrivateRouteTable
       SubnetId: !Ref PrivateSubnetB
 
   PrivateRouteTableAssociation3:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
-      RouteTableId: !Ref NatRouteTable
+      RouteTableId: !Ref PrivateRouteTable
       SubnetId: !Ref PrivateSubnetC
 
 Outputs:
@@ -221,11 +221,11 @@ Outputs:
     Export:
       Name: !Sub "${AWS::StackName}-public-subnet-a-id"
 
-  # PrivateSubnetIdA:
-  #   Description: Private Subnet A id
-  #   Value: !Ref PrivateSubnetA
-  #   Export:
-  #     Name: !Sub "${AWS::StackName}-private-subnet-a-id"
+  PrivateSubnetIdA:
+    Description: Private Subnet A id
+    Value: !Ref PrivateSubnetA
+    Export:
+      Name: !Sub "${AWS::StackName}-private-subnet-a-id"
 
   PrivateSubnetIdB:
     Description: Private Subnet B id
