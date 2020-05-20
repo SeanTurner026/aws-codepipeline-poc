@@ -19,7 +19,7 @@ Parameters:
   GithubRepository:
     Type: String
     Description: github repository
-    Default: aws-codepipeline-nested-cloudformation
+    Default: aws-codepipeline-deploying-cloudformation
 
   GithubBranch:
     Type: String
