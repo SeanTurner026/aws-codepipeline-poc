@@ -3,7 +3,6 @@ AWSTemplateFormatVersion: 2010-09-09
 Description: codepipeline plus all resources necessary to build to build docker containers
 
 Parameters:
-
   BaseStackName:
     Type: String
     Description: stack name containing all base resources
@@ -38,7 +37,6 @@ Parameters:
     NoEcho: true
 
 Resources:
-
   CodePipelineRole:
     Type: "AWS::IAM::Role"
     Properties:
@@ -85,8 +83,7 @@ Resources:
       GroupDescription: security group for code build
       GroupName: codebuild-security-group
       VpcId:
-        Fn::ImportValue:
-          !Sub  "${BaseStackName}-vpc-id"
+        Fn::ImportValue: !Sub "${BaseStackName}-vpc-id"
       SecurityGroupIngress:
         - CidrIp: 0.0.0.0/0
           FromPort: 22
@@ -202,17 +199,13 @@ Resources:
       ServiceRole: !Ref CodeBuildRole
       VpcConfig:
         VpcId:
-          Fn::ImportValue:
-            !Sub  "${BaseStackName}-vpc-id"
+          Fn::ImportValue: !Sub "${BaseStackName}-vpc-id"
         SecurityGroupIds:
           - !Ref CodeBuildSecurityGroup
         Subnets:
-          - Fn::ImportValue:
-              !Sub "${BaseStackName}-private-1-subnet-id"
-          - Fn::ImportValue:
-              !Sub "${BaseStackName}-private-2-subnet-id"
-          - Fn::ImportValue:
-              !Sub "${BaseStackName}-private-3-subnet-id"
+          - Fn::ImportValue: !Sub "${BaseStackName}-private-1-subnet-id"
+          - Fn::ImportValue: !Sub "${BaseStackName}-private-2-subnet-id"
+          - Fn::ImportValue: !Sub "${BaseStackName}-private-3-subnet-id"
       TimeoutInMinutes: 5
       Source:
         Type: CODEPIPELINE
@@ -233,8 +226,7 @@ Resources:
         Type: S3
         Location: !Join
           - "/"
-          - - Fn::ImportValue:
-                !Sub "${BaseStackName}-code-build-bucket-name"
+          - - Fn::ImportValue: !Sub "${BaseStackName}-code-build-bucket-name"
             - cache
         Modes:
           - LOCAL_DOCKER_LAYER_CACHE
@@ -243,8 +235,7 @@ Resources:
           EncryptionDisabled: true
           Location: !Join
             - "/"
-            - - Fn::ImportValue:
-                  !Sub "${BaseStackName}-code-build-bucket-name"
+            - - Fn::ImportValue: !Sub "${BaseStackName}-code-build-bucket-name"
               - logs
           Status: ENABLED
       Artifacts:
@@ -259,8 +250,7 @@ Resources:
       Name: sean-code-pipeline-docker
       ArtifactStore:
         Location:
-          Fn::ImportValue:
-            !Sub  "${BaseStackName}-code-pipeline-bucket-name"
+          Fn::ImportValue: !Sub "${BaseStackName}-code-pipeline-bucket-name"
         Type: S3
       RestartExecutionOnUpdate: true
       RoleArn: !GetAtt CodePipelineRole.Arn
@@ -300,7 +290,6 @@ Resources:
                 - Name: build_push_job
 
 Outputs:
-
   CodeBuildSecurityGroupId:
     Description: security group for codebuild
     Value: !Ref CodeBuildSecurityGroup

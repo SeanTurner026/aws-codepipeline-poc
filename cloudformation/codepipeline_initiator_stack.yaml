@@ -1,9 +1,8 @@
 AWSTemplateFormatVersion: 2010-09-09
 
-Description: codepipeline for aws codepipeline poc
+Description: codepipeline stack to create VPC
 
 Parameters:
-
   CodePipelineCloudformationRoleName:
     Type: String
     Description: iam role name
@@ -17,7 +16,7 @@ Parameters:
   CodePipelineCloudformationBucketName:
     Type: String
     Description: s3 bucket for code pipeline artifacts
-    Default: sean-codepipeline-cloudformation-bucket
+    Default: nzqa-pp2-codepipeline-bucket
 
   CloudformationBaseStackName:
     Type: String
@@ -32,7 +31,7 @@ Parameters:
   GithubBranch:
     Type: String
     Description: github branch
-    Default: two-pipelines
+    Default: nzqa
 
   GithubOwner:
     Type: String
@@ -45,14 +44,17 @@ Parameters:
     NoEcho: true
 
 Resources:
-
   CodePipelineCloudformationBucket:
     Type: "AWS::S3::Bucket"
     Properties:
       BucketName: !Ref CodePipelineCloudformationBucketName
       Tags:
-        - Key: Owner
-          Value: Sean Turner
+        - Key: OwnerTeam
+          Value: Consegna
+        - Key: OwnerTeamEmail
+          Value: aws.nzqa@consegna.cloud
+        - Key: ManagedBy
+          Value: Cloudformation
 
   CodePipelineCloudformationRole:
     Type: "AWS::IAM::Role"
@@ -68,8 +70,12 @@ Resources:
               - cloudformation.amazonaws.com
           Action: "sts:AssumeRole"
       Tags:
-        - Key: Owner
-          Value: Sean Turner
+        - Key: OwnerTeam
+          Value: Consegna
+        - Key: OwnerTeamEmail
+          Value: aws.nzqa@consegna.cloud
+        - Key: ManagedBy
+          Value: Cloudformation
 
   CodePipelineCloudformationPolicy:
     Type: "AWS::IAM::Policy"
@@ -137,5 +143,9 @@ Resources:
               InputArtifacts:
                 - Name: source_code
       Tags:
-        - Key: Owner
-          Value: Sean Turner
+        - Key: OwnerTeam
+          Value: Consegna
+        - Key: OwnerTeamEmail
+          Value: aws.nzqa@consegna.cloud
+        - Key: ManagedBy
+          Value: Cloudformation

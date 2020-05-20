@@ -3,34 +3,33 @@ AWSTemplateFormatVersion: 2010-09-09
 Description: base stack deployed by code pipeline
 
 Parameters:
-
   CodeBuildBucketName:
     Description: name of bucket for code build logging
     Type: String
-    Default: sean-codebuild-bucket
+    Default: nzqa-pp2-codebuild-bucket
 
   CodePipelineBucketName:
     Description: name of bucket for code pipeline artifacts
     Type: String
-    Default: sean-codepipeline-bucket
+    Default: nzqa-pp2-codepipeline-bucket
 
   VpcName:
     Description: name of the vpc
     Type: String
-    Default: sandbox
+    Default: codebuild-primary
 
 Mappings:
   SubnetConfig:
     GlobalCidr:
-      cidr: 10.0.0.0/18
+      cidr: 10.1.0.0/18
     PublicCidr1:
-      cidr: 10.0.0.0/20
+      cidr: 10.1.0.0/20
     PrivateCidr1:
-      cidr: 10.0.16.0/20
+      cidr: 10.1.16.0/20
     PrivateCidr2:
-      cidr: 10.0.32.0/20
+      cidr: 10.1.32.0/20
     PrivateCidr3:
-      cidr: 10.0.48.0/20
+      cidr: 10.1.48.0/20
 
   AvailabilityZones:
     az1:
@@ -46,16 +45,24 @@ Resources:
     Properties:
       BucketName: !Ref CodePipelineBucketName
       Tags:
-        - Key: Owner
-          Value: Sean Turner
+        - Key: OwnerTeam
+          Value: Consegna
+        - Key: OwnerTeamEmail
+          Value: aws.nzqa@consegna.cloud
+        - Key: ManagedBy
+          Value: Cloudformation
 
   CodeBuildBucket:
     Type: "AWS::S3::Bucket"
     Properties:
       BucketName: !Ref CodeBuildBucketName
       Tags:
-        - Key: Owner
-          Value: Sean Turner
+        - Key: OwnerTeam
+          Value: Consegna
+        - Key: OwnerTeamEmail
+          Value: aws.nzqa@consegna.cloud
+        - Key: ManagedBy
+          Value: Cloudformation
 
   Vpc:
     Type: AWS::EC2::VPC
@@ -67,10 +74,14 @@ Resources:
       Tags:
         - Key: Name
           Value: !Ref VpcName
-        - Key: Owner
-          Value: Sean Turner
+        - Key: OwnerTeam
+          Value: Consegna
+        - Key: OwnerTeamEmail
+          Value: aws.nzqa@consegna.cloud
+        - Key: ManagedBy
+          Value: Cloudformation
 
-  PublicSubnet:
+  PublicSubnetA:
     Type: AWS::EC2::Subnet
     Properties:
       AvailabilityZone: !FindInMap [AvailabilityZones, az1, az]
@@ -78,11 +89,15 @@ Resources:
       VpcId: !Ref Vpc
       Tags:
         - Key: Name
-          Value: !Sub "${AWS::StackName}-public-subnet-1"
-        - Key: Owner
-          Value: Sean Turner
+          Value: !Sub "${VpcName}/public/a" # !Join : ["/", [ {"Ref": "VpcName"}, "public", "a"] ]
+        - Key: OwnerTeam
+          Value: Consegna
+        - Key: OwnerTeamEmail
+          Value: aws.nzqa@consegna.cloud
+        - Key: ManagedBy
+          Value: Cloudformation
 
-  PrivateSubnet1:
+  PrivateSubnetA:
     Type: AWS::EC2::Subnet
     Properties:
       AvailabilityZone: !FindInMap [AvailabilityZones, az1, az]
@@ -90,11 +105,15 @@ Resources:
       VpcId: !Ref Vpc
       Tags:
         - Key: Name
-          Value: !Sub "${AWS::StackName}-private-subnet-1"
-        - Key: Owner
-          Value: Sean Turner
+          Value: !Sub "${VpcName}/public/a"
+        - Key: OwnerTeam
+          Value: Consegna
+        - Key: OwnerTeamEmail
+          Value: aws.nzqa@consegna.cloud
+        - Key: ManagedBy
+          Value: Cloudformation
 
-  PrivateSubnet2:
+  PrivateSubnetB:
     Type: AWS::EC2::Subnet
     Properties:
       AvailabilityZone: !FindInMap [AvailabilityZones, az2, az]
@@ -102,11 +121,15 @@ Resources:
       VpcId: !Ref Vpc
       Tags:
         - Key: Name
-          Value: !Sub "${AWS::StackName}-private-subnet-2"
-        - Key: Owner
-          Value: Sean Turner
+          Value: !Sub "${VpcName}/private/b"
+        - Key: OwnerTeam
+          Value: Consegna
+        - Key: OwnerTeamEmail
+          Value: aws.nzqa@consegna.cloud
+        - Key: ManagedBy
+          Value: Cloudformation
 
-  PrivateSubnet3:
+  PrivateSubnetC:
     Type: AWS::EC2::Subnet
     Properties:
       AvailabilityZone: !FindInMap [AvailabilityZones, az3, az]
@@ -114,18 +137,26 @@ Resources:
       VpcId: !Ref Vpc
       Tags:
         - Key: Name
-          Value: !Sub "${AWS::StackName}-private-subnet-3"
-        - Key: Owner
-          Value: Sean Turner
+          Value: !Sub "${VpcName}/private/c"
+        - Key: OwnerTeam
+          Value: Consegna
+        - Key: OwnerTeamEmail
+          Value: aws.nzqa@consegna.cloud
+        - Key: ManagedBy
+          Value: Cloudformation
 
   InternetGateway:
     Type: AWS::EC2::InternetGateway
     Properties:
       Tags:
         - Key: Name
-          Value: !Sub "${AWS::StackName}-igw"
-        - Key: Owner
-          Value: Sean Turner
+          Value: !Ref VpcName
+        - Key: OwnerTeam
+          Value: Consegna
+        - Key: OwnerTeamEmail
+          Value: aws.nzqa@consegna.cloud
+        - Key: ManagedBy
+          Value: Cloudformation
 
   VPCGatewayAttachment:
     Type: AWS::EC2::VPCGatewayAttachment
@@ -139,9 +170,13 @@ Resources:
       VpcId: !Ref Vpc
       Tags:
         - Key: Name
-          Value: !Sub "${AWS::StackName}-public-rt"
-        - Key: Owner
-          Value: Sean Turner
+          Value: !Sub "${VpcName}/public"
+        - Key: OwnerTeam
+          Value: Consegna
+        - Key: OwnerTeamEmail
+          Value: aws.nzqa@consegna.cloud
+        - Key: ManagedBy
+          Value: Cloudformation
 
   PublicRoute:
     Type: AWS::EC2::Route
@@ -154,12 +189,12 @@ Resources:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
       RouteTableId: !Ref PublicRouteTable
-      SubnetId: !Ref PublicSubnet
+      SubnetId: !Ref PublicSubnetA
 
   PublicNetworkAclAssociation:
     Type: AWS::EC2::SubnetNetworkAclAssociation
     Properties:
-      SubnetId: !Ref PublicSubnet
+      SubnetId: !Ref PublicSubnetA
       NetworkAclId: !GetAtt Vpc.DefaultNetworkAcl
 
   NatEip:
@@ -171,12 +206,16 @@ Resources:
     Type: AWS::EC2::NatGateway
     Properties:
       AllocationId: !GetAtt NatEip.AllocationId
-      SubnetId: !Ref PublicSubnet
+      SubnetId: !Ref PublicSubnetA
       Tags:
         - Key: Name
-          Value: !Sub "${AWS::StackName}-nat-gw"
-        - Key: Owner
-          Value: Sean Turner
+          Value: !Sub "${VpcName}/nat"
+        - Key: OwnerTeam
+          Value: Consegna
+        - Key: OwnerTeamEmail
+          Value: aws.nzqa@consegna.cloud
+        - Key: ManagedBy
+          Value: Cloudformation
 
   NatRouteTable:
     Type: AWS::EC2::RouteTable
@@ -184,9 +223,13 @@ Resources:
       VpcId: !Ref Vpc
       Tags:
         - Key: Name
-          Value: !Sub "${AWS::StackName}-nat-rt"
-        - Key: Owner
-          Value: Sean Turner
+          Value: !Sub "${AWS::StackName}/nat"
+        - Key: OwnerTeam
+          Value: Consegna
+        - Key: OwnerTeamEmail
+          Value: aws.nzqa@consegna.cloud
+        - Key: ManagedBy
+          Value: Cloudformation
 
   NatRoute:
     Type: AWS::EC2::Route
@@ -199,19 +242,19 @@ Resources:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
       RouteTableId: !Ref NatRouteTable
-      SubnetId: !Ref PrivateSubnet1
+      SubnetId: !Ref PrivateSubnetA
 
   PrivateRouteTableAssociation2:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
       RouteTableId: !Ref NatRouteTable
-      SubnetId: !Ref PrivateSubnet2
+      SubnetId: !Ref PrivateSubnetB
 
   PrivateRouteTableAssociation3:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
       RouteTableId: !Ref NatRouteTable
-      SubnetId: !Ref PrivateSubnet3
+      SubnetId: !Ref PrivateSubnetC
 
 Outputs:
   CodePipelineBucketName:
@@ -237,25 +280,25 @@ Outputs:
     Value: !GetAtt Vpc.CidrBlock
 
   PublicSubnetId:
-    Description: public subnet id
-    Value: !Ref PublicSubnet
+    Description: Public Subnet A id
+    Value: !Ref PublicSubnetA
     Export:
-      Name: !Sub "${AWS::StackName}-public-subnet-id"
+      Name: !Sub "${AWS::StackName}-public-subnet-a-id"
 
   PrivateSubnetId1:
-    Description: private subnet 1 id
-    Value: !Ref PrivateSubnet1
+    Description: Private Subnet A id
+    Value: !Ref PrivateSubnetA
     Export:
-      Name: !Sub "${AWS::StackName}-private-1-subnet-id"
+      Name: !Sub "${AWS::StackName}-private-subnet-a-id"
 
   PrivateSubnetId2:
-    Description: private subnet 2 id
-    Value: !Ref PrivateSubnet2
+    Description: Private Subnet B id
+    Value: !Ref PrivateSubnetB
     Export:
-      Name: !Sub "${AWS::StackName}-private-2-subnet-id"
+      Name: !Sub "${AWS::StackName}-private-subnet-b-id"
 
   PrivateSubnetId3:
-    Description: private subnet 3 id
-    Value: !Ref PrivateSubnet3
+    Description: Private Subnet C id
+    Value: !Ref PrivateSubnetC
     Export:
-      Name: !Sub "${AWS::StackName}-private-3-subnet-id"
+      Name: !Sub "${AWS::StackName}-private-subnet-c-id"
